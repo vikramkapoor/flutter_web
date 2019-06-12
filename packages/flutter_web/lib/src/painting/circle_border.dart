@@ -1,13 +1,13 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Synced 2019-06-12T10:31:55.345158.
 
 import 'dart:math' as math;
 
-import 'package:flutter_web/painting.dart';
-import 'package:flutter_web_ui/ui.dart';
-
+import 'basic_types.dart';
 import 'borders.dart';
+import 'edge_insets.dart';
 
 /// A border that fits a circle within the available space.
 ///
@@ -26,38 +26,37 @@ class CircleBorder extends ShapeBorder {
   /// Create a circle border.
   ///
   /// The [side] argument must not be null.
-  // TODO(yjbanov): const asserts are broken in dart2js.
-  const CircleBorder({this.side = BorderSide.none}); // : assert(side != null);
+  const CircleBorder({this.side = BorderSide.none}) : assert(side != null);
 
   /// The style of this border.
   final BorderSide side;
 
   @override
   EdgeInsetsGeometry get dimensions {
-    return new EdgeInsets.all(side.width);
+    return EdgeInsets.all(side.width);
   }
 
   @override
-  ShapeBorder scale(double t) => new CircleBorder(side: side.scale(t));
+  ShapeBorder scale(double t) => CircleBorder(side: side.scale(t));
 
   @override
   ShapeBorder lerpFrom(ShapeBorder a, double t) {
     if (a is CircleBorder)
-      return new CircleBorder(side: BorderSide.lerp(a.side, side, t));
+      return CircleBorder(side: BorderSide.lerp(a.side, side, t));
     return super.lerpFrom(a, t);
   }
 
   @override
   ShapeBorder lerpTo(ShapeBorder b, double t) {
     if (b is CircleBorder)
-      return new CircleBorder(side: BorderSide.lerp(side, b.side, t));
+      return CircleBorder(side: BorderSide.lerp(side, b.side, t));
     return super.lerpTo(b, t);
   }
 
   @override
   Path getInnerPath(Rect rect, {TextDirection textDirection}) {
-    return new Path()
-      ..addOval(new Rect.fromCircle(
+    return Path()
+      ..addOval(Rect.fromCircle(
         center: rect.center,
         radius: math.max(0.0, rect.shortestSide / 2.0 - side.width),
       ));
@@ -65,8 +64,8 @@ class CircleBorder extends ShapeBorder {
 
   @override
   Path getOuterPath(Rect rect, {TextDirection textDirection}) {
-    return new Path()
-      ..addOval(new Rect.fromCircle(
+    return Path()
+      ..addOval(Rect.fromCircle(
         center: rect.center,
         radius: rect.shortestSide / 2.0,
       ));

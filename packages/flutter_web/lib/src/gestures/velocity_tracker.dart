@@ -1,11 +1,15 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Synced 2019-06-12T10:31:55.332415.
 
-import 'package:meta/meta.dart';
-import 'package:flutter_web_ui/ui.dart';
-import '../util.dart';
+import 'package:flutter_web_ui/ui.dart' show Offset;
+
+import 'package:flutter_web/foundation.dart';
+
 import 'lsq_solver.dart';
+
+export 'package:flutter_web_ui/ui.dart' show Offset;
 
 /// A velocity in two dimensions.
 class Velocity {
@@ -14,29 +18,25 @@ class Velocity {
   /// The [pixelsPerSecond] argument must not be null.
   const Velocity({
     @required this.pixelsPerSecond,
-  });
-  // TODO(yjbanov): re-add const asserts when dart2js supports them.
-  // : assert(pixelsPerSecond != null);
+  }) : assert(pixelsPerSecond != null);
 
   /// A velocity that isn't moving at all.
-  static const Velocity zero = const Velocity(pixelsPerSecond: Offset.zero);
+  static const Velocity zero = Velocity(pixelsPerSecond: Offset.zero);
 
   /// The number of pixels per second of velocity in the x and y directions.
   final Offset pixelsPerSecond;
 
   /// Return the negation of a velocity.
-  Velocity operator -() => new Velocity(pixelsPerSecond: -pixelsPerSecond);
+  Velocity operator -() => Velocity(pixelsPerSecond: -pixelsPerSecond);
 
   /// Return the difference of two velocities.
   Velocity operator -(Velocity other) {
-    return new Velocity(
-        pixelsPerSecond: pixelsPerSecond - other.pixelsPerSecond);
+    return Velocity(pixelsPerSecond: pixelsPerSecond - other.pixelsPerSecond);
   }
 
   /// Return the sum of two velocities.
   Velocity operator +(Velocity other) {
-    return new Velocity(
-        pixelsPerSecond: pixelsPerSecond + other.pixelsPerSecond);
+    return Velocity(pixelsPerSecond: pixelsPerSecond + other.pixelsPerSecond);
   }
 
   /// Return a velocity whose magnitude has been clamped to [minValue]
@@ -54,11 +54,11 @@ class Velocity {
     assert(maxValue != null && maxValue >= 0.0 && maxValue >= minValue);
     final double valueSquared = pixelsPerSecond.distanceSquared;
     if (valueSquared > maxValue * maxValue)
-      return new Velocity(
+      return Velocity(
           pixelsPerSecond:
               (pixelsPerSecond / pixelsPerSecond.distance) * maxValue);
     if (valueSquared < minValue * minValue)
-      return new Velocity(
+      return Velocity(
           pixelsPerSecond:
               (pixelsPerSecond / pixelsPerSecond.distance) * minValue);
     return this;
@@ -89,14 +89,13 @@ class Velocity {
 ///
 /// See also:
 ///
-///  * VelocityTracker, which computes [VelocityEstimate]s.
-///  * Velocity, which encapsulates (just) a velocity vector and provides some
+///  * [VelocityTracker], which computes [VelocityEstimate]s.
+///  * [Velocity], which encapsulates (just) a velocity vector and provides some
 ///    useful velocity operations.
 class VelocityEstimate {
   /// Creates a dimensional velocity estimate.
   ///
-  /// [pixelsPerSecond], [confidence], [duration], and [offset] must not be
-  /// null.
+  /// [pixelsPerSecond], [confidence], [duration], and [offset] must not be null.
   const VelocityEstimate({
     @required this.pixelsPerSecond,
     @required this.confidence,
@@ -125,15 +124,8 @@ class VelocityEstimate {
   final Offset offset;
 
   @override
-  String toString() {
-    if (assertionsEnabled) {
-      return 'VelocityEstimate(${pixelsPerSecond.dx.toStringAsFixed(1)}, '
-          '${pixelsPerSecond.dy.toStringAsFixed(1)}; offset: $offset, '
-          'duration: $duration, confidence: ${confidence.toStringAsFixed(1)})';
-    } else {
-      return super.toString();
-    }
-  }
+  String toString() =>
+      'VelocityEstimate(${pixelsPerSecond.dx.toStringAsFixed(1)}, ${pixelsPerSecond.dy.toStringAsFixed(1)}; offset: $offset, duration: $duration, confidence: ${confidence.toStringAsFixed(1)})';
 }
 
 class _PointAtTime {
@@ -165,14 +157,14 @@ class VelocityTracker {
   static const int _minSampleSize = 3;
 
   // Circular buffer; current sample at _index.
-  final List<_PointAtTime> _samples = new List<_PointAtTime>(_historySize);
+  final List<_PointAtTime> _samples = List<_PointAtTime>(_historySize);
   int _index = 0;
 
   /// Adds a position as the given time to the tracker.
   void addPosition(Duration time, Offset position) {
     _index += 1;
     if (_index == _historySize) _index = 0;
-    _samples[_index] = new _PointAtTime(position, time);
+    _samples[_index] = _PointAtTime(position, time);
   }
 
   /// Returns an estimate of the velocity of the object being tracked by the
@@ -221,15 +213,15 @@ class VelocityTracker {
     } while (sampleCount < _historySize);
 
     if (sampleCount >= _minSampleSize) {
-      final LeastSquaresSolver xSolver = new LeastSquaresSolver(time, x, w);
+      final LeastSquaresSolver xSolver = LeastSquaresSolver(time, x, w);
       final PolynomialFit xFit = xSolver.solve(2);
       if (xFit != null) {
-        final LeastSquaresSolver ySolver = new LeastSquaresSolver(time, y, w);
+        final LeastSquaresSolver ySolver = LeastSquaresSolver(time, y, w);
         final PolynomialFit yFit = ySolver.solve(2);
         if (yFit != null) {
-          return new VelocityEstimate(
+          return VelocityEstimate(
             // convert from pixels/ms to pixels/s
-            pixelsPerSecond: new Offset(
+            pixelsPerSecond: Offset(
                 xFit.coefficients[1] * 1000, yFit.coefficients[1] * 1000),
             confidence: xFit.confidence * yFit.confidence,
             duration: newestSample.time - oldestSample.time,
@@ -241,7 +233,7 @@ class VelocityTracker {
 
     // We're unable to make a velocity estimate but we did have at least one
     // valid pointer position.
-    return new VelocityEstimate(
+    return VelocityEstimate(
       pixelsPerSecond: Offset.zero,
       confidence: 1.0,
       duration: newestSample.time - oldestSample.time,
@@ -260,6 +252,6 @@ class VelocityTracker {
     final VelocityEstimate estimate = getVelocityEstimate();
     if (estimate == null || estimate.pixelsPerSecond == Offset.zero)
       return Velocity.zero;
-    return new Velocity(pixelsPerSecond: estimate.pixelsPerSecond);
+    return Velocity(pixelsPerSecond: estimate.pixelsPerSecond);
   }
 }
