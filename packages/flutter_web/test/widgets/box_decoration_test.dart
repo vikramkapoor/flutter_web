@@ -1,10 +1,12 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Synced. * Contains Web DELTA *
 
 import 'dart:async';
 import 'dart:typed_data';
-import 'package:flutter_web_ui/ui.dart' as ui show Image;
+import 'package:flutter_web_ui/ui.dart' as ui
+    show Image, webOnlyInitializeTestDomRenderer;
 
 import 'package:flutter_web/foundation.dart';
 import 'package:flutter_web/material.dart';
@@ -35,6 +37,10 @@ class TestImageProvider extends ImageProvider<TestImageProvider> {
 }
 
 Future<void> main() async {
+  // The line below is temporary since new entrypoint generator creates this
+  // call.
+  await ui.webOnlyInitializeTestDomRenderer();
+  AutomatedTestWidgetsFlutterBinding();
   TestImageProvider.image =
       await decodeImageFromList(Uint8List.fromList(kTransparentImage));
 
@@ -93,21 +99,28 @@ Future<void> main() async {
 
   testWidgets('Circles can have uniform borders', (WidgetTester tester) async {
     await tester.pumpWidget(Container(
-        padding: const EdgeInsets.all(50.0),
-        decoration: BoxDecoration(
-            shape: BoxShape.circle,
-            border: Border.all(width: 10.0, color: const Color(0x80FF00FF)),
-            color: Colors.teal[600])));
+      padding: const EdgeInsets.all(50.0),
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        border: Border.all(width: 10.0, color: const Color(0x80FF00FF)),
+        color: Colors.teal[600],
+      ),
+    ));
   });
 
   testWidgets('Bordered Container insets its child',
       (WidgetTester tester) async {
     const Key key = Key('outerContainer');
     await tester.pumpWidget(Center(
+      child: Container(
+        key: key,
+        decoration: BoxDecoration(border: Border.all(width: 10.0)),
         child: Container(
-            key: key,
-            decoration: BoxDecoration(border: Border.all(width: 10.0)),
-            child: Container(width: 25.0, height: 25.0))));
+          width: 25.0,
+          height: 25.0,
+        ),
+      ),
+    ));
     expect(tester.getSize(find.byKey(key)), equals(const Size(45.0, 45.0)));
   });
 
@@ -243,36 +256,37 @@ Future<void> main() async {
       ),
     );
     expect(
-        find.byType(Column),
-        paints
-          ..path()
-          ..path()
-          ..path()
-          ..path()
-          ..rect(rect: Rect.fromLTRB(355.0, 105.0, 445.0, 195.0))
-          ..drrect(
-            outer: RRect.fromLTRBAndCorners(
-              350.0,
-              200.0,
-              450.0,
-              300.0,
-              topLeft: Radius.zero,
-              topRight: const Radius.circular(10.0),
-              bottomRight: Radius.zero,
-              bottomLeft: Radius.zero,
-            ),
-            inner: RRect.fromLTRBAndCorners(
-              360.0,
-              210.0,
-              440.0,
-              290.0,
-              topLeft: const Radius.circular(-10.0),
-              topRight: Radius.zero,
-              bottomRight: const Radius.circular(-10.0),
-              bottomLeft: const Radius.circular(-10.0),
-            ),
-          )
-          ..circle(x: 400.0, y: 350.0, radius: 45.0));
+      find.byType(Column),
+      paints
+        ..path()
+        ..path()
+        ..path()
+        ..path()
+        ..rect(rect: const Rect.fromLTRB(355.0, 105.0, 445.0, 195.0))
+        ..drrect(
+          outer: RRect.fromLTRBAndCorners(
+            350.0,
+            200.0,
+            450.0,
+            300.0,
+            topLeft: Radius.zero,
+            topRight: const Radius.circular(10.0),
+            bottomRight: Radius.zero,
+            bottomLeft: Radius.zero,
+          ),
+          inner: RRect.fromLTRBAndCorners(
+            360.0,
+            210.0,
+            440.0,
+            290.0,
+            topLeft: const Radius.circular(-10.0),
+            topRight: Radius.zero,
+            bottomRight: const Radius.circular(-10.0),
+            bottomLeft: const Radius.circular(-10.0),
+          ),
+        )
+        ..circle(x: 400.0, y: 350.0, radius: 45.0),
+    );
   });
 
   testWidgets('Can hit test on BoxDecoration', (WidgetTester tester) async {
@@ -282,18 +296,19 @@ Future<void> main() async {
     Widget buildFrame(Border border) {
       itemsTapped = <int>[];
       return Center(
-          child: GestureDetector(
-        behavior: HitTestBehavior.deferToChild,
-        child: Container(
-          key: key,
-          width: 100.0,
-          height: 50.0,
-          decoration: BoxDecoration(border: border),
+        child: GestureDetector(
+          behavior: HitTestBehavior.deferToChild,
+          child: Container(
+            key: key,
+            width: 100.0,
+            height: 50.0,
+            decoration: BoxDecoration(border: border),
+          ),
+          onTap: () {
+            itemsTapped.add(1);
+          },
         ),
-        onTap: () {
-          itemsTapped.add(1);
-        },
-      ));
+      );
     }
 
     await tester.pumpWidget(buildFrame(Border.all()));
@@ -317,18 +332,19 @@ Future<void> main() async {
     Widget buildFrame(Border border) {
       itemsTapped = <int>[];
       return Center(
-          child: GestureDetector(
-        behavior: HitTestBehavior.deferToChild,
-        child: Container(
-          key: key,
-          width: 100.0,
-          height: 50.0,
-          decoration: BoxDecoration(border: border, shape: BoxShape.circle),
+        child: GestureDetector(
+          behavior: HitTestBehavior.deferToChild,
+          child: Container(
+            key: key,
+            width: 100.0,
+            height: 50.0,
+            decoration: BoxDecoration(border: border, shape: BoxShape.circle),
+          ),
+          onTap: () {
+            itemsTapped.add(1);
+          },
         ),
-        onTap: () {
-          itemsTapped.add(1);
-        },
-      ));
+      );
     }
 
     await tester.pumpWidget(buildFrame(Border.all()));

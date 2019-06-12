@@ -1,6 +1,7 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Synced 2019-06-12T10:31:39.608604.
 
 import 'dart:math' as math;
 
@@ -15,8 +16,6 @@ import 'decoration_image.dart';
 import 'edge_insets.dart';
 import 'gradient.dart';
 import 'image_provider.dart';
-
-import '../util.dart';
 
 /// An immutable description of how to paint a box.
 ///
@@ -34,7 +33,7 @@ import '../util.dart';
 ///
 /// The [border] paints over the body; the [boxShadow], naturally, paints below it.
 ///
-/// ## Sample code
+/// {@tool sample}
 ///
 /// The following example uses the [Container] widget from the widgets layer to
 /// draw an image with a border:
@@ -54,6 +53,14 @@ import '../util.dart';
 ///   ),
 /// )
 /// ```
+/// {@end-tool}
+///
+/// {@template flutter.painting.boxDecoration.clip}
+/// The [shape] or the [borderRadius] won't clip the children of the
+/// decorated [Container]. If the clip is required, insert a clip widget
+/// (e.g., [ClipRect], [ClipRRect], [ClipPath]) as the child of the [Container].
+/// Be aware that clipping may be costly in terms of performance.
+/// {@endtemplate}
 ///
 /// See also:
 ///
@@ -89,6 +96,30 @@ class BoxDecoration extends Decoration {
             backgroundBlendMode == null || color != null || gradient != null,
             'backgroundBlendMode applies to BoxDecoration\'s background color or '
             'gradient, but no color or gradient was provided.');
+
+  /// Creates a copy of this object but with the given fields replaced with the
+  /// new values.
+  BoxDecoration copyWith({
+    Color color,
+    DecorationImage image,
+    BoxBorder border,
+    BorderRadiusGeometry borderRadius,
+    List<BoxShadow> boxShadow,
+    Gradient gradient,
+    BlendMode backgroundBlendMode,
+    BoxShape shape,
+  }) {
+    return BoxDecoration(
+      color: color ?? this.color,
+      image: image ?? this.image,
+      border: border ?? this.border,
+      borderRadius: borderRadius ?? this.borderRadius,
+      boxShadow: boxShadow ?? this.boxShadow,
+      gradient: gradient ?? this.gradient,
+      backgroundBlendMode: backgroundBlendMode ?? this.backgroundBlendMode,
+      shape: shape ?? this.shape,
+    );
+  }
 
   @override
   bool debugAssertIsValid() {
@@ -130,6 +161,8 @@ class BoxDecoration extends Decoration {
   ///
   /// Applies only to boxes with rectangular shapes; ignored if [shape] is not
   /// [BoxShape.rectangle].
+  ///
+  /// {@macro flutter.painting.boxDecoration.clip}
   final BorderRadiusGeometry borderRadius;
 
   /// A list of shadows cast by this box behind the box.
@@ -163,6 +196,8 @@ class BoxDecoration extends Decoration {
   /// different [ShapeBorder]s; in particular, [CircleBorder] instead of
   /// [BoxShape.circle] and [RoundedRectangleBorder] instead of
   /// [BoxShape.rectangle].
+  ///
+  /// {@macro flutter.painting.boxDecoration.clip}
   final BoxShape shape;
 
   @override
@@ -439,10 +474,6 @@ class _BoxDecorationPainter extends BoxPainter {
 
   @override
   String toString() {
-    if (assertionsEnabled) {
-      return 'BoxPainter for $_decoration';
-    } else {
-      return super.toString();
-    }
+    return 'BoxPainter for $_decoration';
   }
 }
