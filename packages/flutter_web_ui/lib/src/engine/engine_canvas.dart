@@ -251,7 +251,7 @@ html.Element _drawParagraphElement(
     ..position = 'absolute'
     ..whiteSpace = 'pre-wrap'
     ..overflowWrap = 'break-word'
-    ..overflowY = 'hidden'
+    ..overflow = 'hidden'
     ..height = '${paragraph.height}px'
     ..width = '${paragraph.width}px';
 
@@ -270,7 +270,6 @@ html.Element _drawParagraphElement(
       (style.maxLines == null || style.maxLines == 1)) {
     paragraphStyle
       ..whiteSpace = 'pre'
-      ..overflowX = 'hidden'
       ..textOverflow = 'ellipsis';
   }
   return paragraphElement;
