@@ -121,7 +121,7 @@ class WindowPadding {
 
   /// A window padding that has zeros for each edge.
   static const WindowPadding zero =
-      const WindowPadding._(left: 0.0, top: 0.0, right: 0.0, bottom: 0.0);
+      WindowPadding._(left: 0.0, top: 0.0, right: 0.0, bottom: 0.0);
 
   @override
   String toString() {
@@ -463,8 +463,12 @@ class Locale {
 
   @override
   bool operator ==(dynamic other) {
-    if (identical(this, other)) return true;
-    if (other is! Locale) return false;
+    if (identical(this, other)) {
+      return true;
+    }
+    if (other is! Locale) {
+      return false;
+    }
     final Locale typedOther = other;
     return languageCode == typedOther.languageCode &&
         scriptCode == typedOther.scriptCode &&

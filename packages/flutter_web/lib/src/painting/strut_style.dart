@@ -1,9 +1,9 @@
 // Copyright 2019 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Synced 2019-06-12T09:04:32.865793.
 
 import 'package:flutter_web/foundation.dart';
-import 'package:meta/meta.dart';
 
 import 'basic_types.dart';
 import 'text_style.dart';
@@ -44,6 +44,10 @@ import 'text_style.dart';
 /// Each line's spacing above the baseline will be at least as tall as the half
 /// leading plus ascent. Each line's spacing below the baseline will be at least as
 /// tall as the half leading plus descent.
+///
+/// See also:
+///
+///  * [StrutStyle](dart-ui/StrutStyle-class.html), the class in the [dart:ui] library.
 ///
 /// ### Fields and their default values.
 
@@ -284,8 +288,7 @@ class StrutStyle extends Diagnosticable {
             package == null ? fontFamily : 'packages/$package/$fontFamily',
         _fontFamilyFallback = fontFamilyFallback,
         _package = package,
-        // TODO(flutter_web): const asserts are broken in dart2js.
-        // assert(fontSize == null || fontSize > 0),
+        assert(fontSize == null || fontSize > 0),
         assert(leading == null || leading >= 0),
         assert(package == null ||
             (package != null &&
