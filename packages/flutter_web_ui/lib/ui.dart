@@ -16,7 +16,8 @@ import 'dart:typed_data';
 import 'package:meta/meta.dart';
 
 import 'src/engine.dart' as engine;
-export 'src/engine.dart' show persistedPictureFactory, houdiniPictureFactory;
+export 'src/engine.dart'
+    show persistedPictureFactory, houdiniPictureFactory, platformViewRegistry;
 
 part 'src/ui/canvas.dart';
 part 'src/ui/compositing.dart';

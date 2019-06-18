@@ -21,14 +21,26 @@ class FakeAndroidPlatformViewsController {
   final Map<int, List<FakeAndroidMotionEvent>> motionEvents =
       <int, List<FakeAndroidMotionEvent>>{};
 
-  final Set<String> _registeredViewTypes = Set<String>();
+  final Set<String> _registeredViewTypes = <String>{};
 
   int _textureCounter = 0;
 
   Completer<void> resizeCompleter;
 
+  Completer<void> createCompleter;
+
+  int lastClearedFocusViewId;
+
   void registerViewType(String viewType) {
     _registeredViewTypes.add(viewType);
+  }
+
+  void invokeViewFocused(int viewId) {
+    final MethodCodec codec = SystemChannels.platform_views.codec;
+    final ByteData data =
+        codec.encodeMethodCall(MethodCall('viewFocused', viewId));
+    BinaryMessages.handlePlatformMessage(
+        SystemChannels.platform_views.name, data, (ByteData data) {});
   }
 
   Future<dynamic> _onMethodCall(MethodCall call) {
@@ -43,11 +55,13 @@ class FakeAndroidPlatformViewsController {
         return _touch(call);
       case 'setDirection':
         return _setDirection(call);
+      case 'clearFocus':
+        return _clearFocus(call);
     }
     return Future<dynamic>.sync(() => null);
   }
 
-  Future<dynamic> _create(MethodCall call) {
+  Future<dynamic> _create(MethodCall call) async {
     final Map<dynamic, dynamic> args = call.arguments;
     final int id = args['id'];
     final String viewType = args['viewType'];
@@ -69,6 +83,10 @@ class FakeAndroidPlatformViewsController {
         message:
             'Trying to create a platform view of unregistered type: $viewType',
       );
+
+    if (createCompleter != null) {
+      await createCompleter.future;
+    }
 
     _views[id] = FakeAndroidPlatformView(
         id, viewType, Size(width, height), layoutDirection, creationParams);
@@ -147,6 +165,20 @@ class FakeAndroidPlatformViewsController {
 
     return Future<dynamic>.sync(() => null);
   }
+
+  Future<dynamic> _clearFocus(MethodCall call) {
+    final int id = call.arguments;
+
+    if (!_views.containsKey(id))
+      throw PlatformException(
+        code: 'error',
+        message:
+            'Trying to clear the focus on a platform view with unknown id: $id',
+      );
+
+    lastClearedFocusViewId = id;
+    return Future<dynamic>.sync(() => null);
+  }
 }
 
 class FakeIosPlatformViewsController {
@@ -157,7 +189,7 @@ class FakeIosPlatformViewsController {
   Iterable<FakeUiKitView> get views => _views.values;
   final Map<int, FakeUiKitView> _views = <int, FakeUiKitView>{};
 
-  final Set<String> _registeredViewTypes = Set<String>();
+  final Set<String> _registeredViewTypes = <String>{};
 
   // When this completer is non null, the 'create' method channel call will be
   // delayed until it completes.
@@ -245,6 +277,120 @@ class FakeIosPlatformViewsController {
   }
 }
 
+class FakeHtmlPlatformViewsController {
+  FakeHtmlPlatformViewsController() {
+    SystemChannels.platform_views.setMockMethodCallHandler(_onMethodCall);
+  }
+
+  Iterable<FakeHtmlPlatformView> get views => _views.values;
+  final Map<int, FakeHtmlPlatformView> _views = <int, FakeHtmlPlatformView>{};
+
+  final Set<String> _registeredViewTypes = <String>{};
+
+  Completer<void> resizeCompleter;
+
+  Completer<void> createCompleter;
+
+  void registerViewType(String viewType) {
+    _registeredViewTypes.add(viewType);
+  }
+
+  Future<dynamic> _onMethodCall(MethodCall call) {
+    switch (call.method) {
+      case 'create':
+        return _create(call);
+      case 'dispose':
+        return _dispose(call);
+      case 'resize':
+        return _resize(call);
+      case 'setDirection':
+        return _setDirection(call);
+    }
+    return Future<dynamic>.sync(() => null);
+  }
+
+  Future<dynamic> _create(MethodCall call) async {
+    final Map<dynamic, dynamic> args = call.arguments;
+    final int id = args['id'];
+    final String viewType = args['viewType'];
+    final double width = args['width'];
+    final double height = args['height'];
+    final int layoutDirection = args['direction'];
+    final Uint8List creationParams = args['params'];
+
+    if (_views.containsKey(id))
+      throw PlatformException(
+        code: 'error',
+        message:
+            'Trying to create an already created platform view, view id: $id',
+      );
+
+    if (!_registeredViewTypes.contains(viewType))
+      throw PlatformException(
+        code: 'error',
+        message:
+            'Trying to create a platform view of unregistered type: $viewType',
+      );
+
+    if (createCompleter != null) {
+      await createCompleter.future;
+    }
+
+    _views[id] = FakeHtmlPlatformView(
+        id, viewType, Size(width, height), layoutDirection);
+    return Future<int>.sync(() => null);
+  }
+
+  Future<dynamic> _dispose(MethodCall call) {
+    final int id = call.arguments;
+
+    if (!_views.containsKey(id))
+      throw PlatformException(
+        code: 'error',
+        message: 'Trying to dispose a platform view with unknown id: $id',
+      );
+
+    _views.remove(id);
+    return Future<dynamic>.sync(() => null);
+  }
+
+  Future<dynamic> _resize(MethodCall call) async {
+    final Map<dynamic, dynamic> args = call.arguments;
+    final int id = args['id'];
+    final double width = args['width'];
+    final double height = args['height'];
+
+    if (!_views.containsKey(id))
+      throw PlatformException(
+        code: 'error',
+        message: 'Trying to resize a platform view with unknown id: $id',
+      );
+
+    if (resizeCompleter != null) {
+      await resizeCompleter.future;
+    }
+    _views[id].size = Size(width, height);
+
+    return Future<dynamic>.sync(() => null);
+  }
+
+  Future<dynamic> _setDirection(MethodCall call) async {
+    final Map<dynamic, dynamic> args = call.arguments;
+    final int id = args['id'];
+    final int layoutDirection = args['direction'];
+
+    if (!_views.containsKey(id))
+      throw PlatformException(
+        code: 'error',
+        message: 'Trying to resize a platform view with unknown id: $id',
+      );
+
+    _views[id].layoutDirection = layoutDirection;
+
+    return Future<dynamic>.sync(() => null);
+  }
+}
+
 class FakeAndroidPlatformView {
   FakeAndroidPlatformView(this.id, this.type, this.size, this.layoutDirection,
       [this.creationParams]);
@@ -327,163 +473,22 @@ class FakeUiKitView {
   }
 }
 
-class FakeWebPlatformViewsController {
-  FakeWebPlatformViewsController() {
-    SystemChannels.platform_views.setMockMethodCallHandler(_onMethodCall);
-  }
-
-  Iterable<FakeWebPlatformView> get views => _views.values;
-  final Map<int, FakeWebPlatformView> _views = <int, FakeWebPlatformView>{};
-
-  final Map<int, List<FakeWebMotionEvent>> motionEvents =
-      <int, List<FakeWebMotionEvent>>{};
-
-  final Set<String> _registeredViewTypes = Set<String>();
-
-  int _textureCounter = 0;
-
-  Completer<void> resizeCompleter;
-
-  void registerViewType(String viewType) {
-    _registeredViewTypes.add(viewType);
-  }
-
-  Future<dynamic> _onMethodCall(MethodCall call) {
-    switch (call.method) {
-      case 'create':
-        return _create(call);
-      case 'dispose':
-        return _dispose(call);
-      case 'resize':
-        return _resize(call);
-      case 'touch':
-        return _touch(call);
-      case 'setDirection':
-        return _setDirection(call);
-    }
-    return Future<dynamic>.sync(() => null);
-  }
-
-  Future<dynamic> _create(MethodCall call) {
-    final Map<dynamic, dynamic> args = call.arguments;
-    final int id = args['id'];
-    final String viewType = args['viewType'];
-    final double width = args['width'];
-    final double height = args['height'];
-    final int layoutDirection = args['direction'];
-    final Uint8List creationParams = args['params'];
-
-    if (_views.containsKey(id))
-      throw PlatformException(
-        code: 'error',
-        message:
-            'Trying to create an already created platform view, view id: $id',
-      );
-
-    if (!_registeredViewTypes.contains(viewType))
-      throw PlatformException(
-        code: 'error',
-        message:
-            'Trying to create a platform view of unregistered type: $viewType',
-      );
-
-    _views[id] = FakeWebPlatformView(
-        id, viewType, Size(width, height), layoutDirection, creationParams);
-    final int textureId = _textureCounter++;
-    return Future<int>.sync(() => textureId);
-  }
-
-  Future<dynamic> _dispose(MethodCall call) {
-    final int id = call.arguments;
-
-    if (!_views.containsKey(id))
-      throw PlatformException(
-        code: 'error',
-        message: 'Trying to dispose a platform view with unknown id: $id',
-      );
-
-    _views.remove(id);
-    return Future<dynamic>.sync(() => null);
-  }
-
-  Future<dynamic> _resize(MethodCall call) async {
-    final Map<dynamic, dynamic> args = call.arguments;
-    final int id = args['id'];
-    final double width = args['width'];
-    final double height = args['height'];
-
-    if (!_views.containsKey(id))
-      throw PlatformException(
-        code: 'error',
-        message: 'Trying to resize a platform view with unknown id: $id',
-      );
-
-    if (resizeCompleter != null) {
-      await resizeCompleter.future;
-    }
-    _views[id].size = Size(width, height);
-
-    return Future<dynamic>.sync(() => null);
-  }
-
-  Future<dynamic> _touch(MethodCall call) {
-    final List<dynamic> args = call.arguments;
-    final int id = args[0];
-    final int action = args[3];
-    final List<List<dynamic>> pointerProperties = args[5].cast<List<dynamic>>();
-    final List<List<dynamic>> pointerCoords = args[6].cast<List<dynamic>>();
-    final List<Offset> pointerOffsets = <Offset>[];
-    final List<int> pointerIds = <int>[];
-    for (int i = 0; i < pointerCoords.length; i++) {
-      pointerIds.add(pointerProperties[i][0]);
-      final double x = pointerCoords[i][7];
-      final double y = pointerCoords[i][8];
-      pointerOffsets.add(Offset(x, y));
-    }
-
-    if (!motionEvents.containsKey(id))
-      motionEvents[id] = <FakeWebMotionEvent>[];
-
-    motionEvents[id]
-        .add(FakeWebMotionEvent(action, pointerIds, pointerOffsets));
-    return Future<dynamic>.sync(() => null);
-  }
-
-  Future<dynamic> _setDirection(MethodCall call) async {
-    final Map<dynamic, dynamic> args = call.arguments;
-    final int id = args['id'];
-    final int layoutDirection = args['direction'];
-
-    if (!_views.containsKey(id))
-      throw PlatformException(
-        code: 'error',
-        message: 'Trying to resize a platform view with unknown id: $id',
-      );
-
-    _views[id].layoutDirection = layoutDirection;
-
-    return Future<dynamic>.sync(() => null);
-  }
-}
-
-class FakeWebPlatformView {
-  FakeWebPlatformView(this.id, this.type, this.size, this.layoutDirection,
-      [this.creationParams]);
+class FakeHtmlPlatformView {
+  FakeHtmlPlatformView(this.id, this.type, this.size, this.layoutDirection);
 
   final int id;
   final String type;
-  final Uint8List creationParams;
   Size size;
   int layoutDirection;
 
   @override
   bool operator ==(dynamic other) {
-    if (other.runtimeType != FakeWebPlatformView) return false;
-    final FakeWebPlatformView typedOther = other;
+    if (other.runtimeType != FakeHtmlPlatformView) return false;
+    final FakeHtmlPlatformView typedOther = other;
     return id == typedOther.id &&
         type == typedOther.type &&
-        creationParams == typedOther.creationParams &&
-        size == typedOther.size;
+        size == typedOther.size &&
+        layoutDirection == typedOther.layoutDirection;
   }
 
   @override
@@ -491,34 +496,6 @@ class FakeWebPlatformView {
 
   @override
   String toString() {
-    return 'FakeWebPlatformView(id: $id, type: $type, size: $size, layoutDirection: $layoutDirection, creationParams: $creationParams)';
-  }
-}
-
-class FakeWebMotionEvent {
-  const FakeWebMotionEvent(this.action, this.pointerIds, this.pointers);
-
-  final int action;
-  final List<Offset> pointers;
-  final List<int> pointerIds;
-
-  @override
-  bool operator ==(dynamic other) {
-    if (other is! FakeWebMotionEvent) return false;
-    final FakeWebMotionEvent typedOther = other;
-    const ListEquality<Offset> offsetsEq = ListEquality<Offset>();
-    const ListEquality<int> pointersEq = ListEquality<int>();
-    return pointersEq.equals(pointerIds, typedOther.pointerIds) &&
-        action == typedOther.action &&
-        offsetsEq.equals(pointers, typedOther.pointers);
-  }
-
-  @override
-  int get hashCode =>
-      hashValues(action, hashList(pointers), hashList(pointerIds));
-
-  @override
-  String toString() {
-    return 'FakeWebMotionEvent(action: $action, pointerIds: $pointerIds, pointers: $pointers)';
+    return 'FakeHtmlPlatformView(id: $id, type: $type, size: $size, layoutDirection: $layoutDirection)';
   }
 }

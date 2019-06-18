@@ -471,3 +471,88 @@ class StandardMessageCodec implements MessageCodec<dynamic> {
     }
   }
 }
+
+/// [MethodCodec] using the Flutter standard binary encoding.
+///
+/// The standard codec is guaranteed to be compatible with the corresponding
+/// standard codec for FlutterMethodChannels on the host platform. These parts
+/// of the Flutter SDK are evolved synchronously.
+///
+/// Values supported as method arguments and result payloads are those supported
+/// by [StandardMessageCodec].
+class StandardMethodCodec implements MethodCodec {
+  // The codec method calls, and result envelopes as outlined below. This format
+  // must match the Android and iOS counterparts.
+  //
+  // * Individual values are encoded using [StandardMessageCodec].
+  // * Method calls are encoded using the concatenation of the encoding
+  //   of the method name String and the arguments value.
+  // * Reply envelopes are encoded using first a single byte to distinguish the
+  //   success case (0) from the error case (1). Then follows:
+  //   * In the success case, the encoding of the result value.
+  //   * In the error case, the concatenation of the encoding of the error code
+  //     string, the error message string, and the error details value.
+
+  /// Creates a [MethodCodec] using the Flutter standard binary encoding.
+  const StandardMethodCodec([this.messageCodec = const StandardMessageCodec()]);
+
+  /// The message codec that this method codec uses for encoding values.
+  final StandardMessageCodec messageCodec;
+
+  @override
+  ByteData encodeMethodCall(MethodCall call) {
+    final WriteBuffer buffer = WriteBuffer();
+    messageCodec.writeValue(buffer, call.method);
+    messageCodec.writeValue(buffer, call.arguments);
+    return buffer.done();
+  }
+
+  @override
+  MethodCall decodeMethodCall(ByteData methodCall) {
+    final ReadBuffer buffer = ReadBuffer(methodCall);
+    final dynamic method = messageCodec.readValue(buffer);
+    final dynamic arguments = messageCodec.readValue(buffer);
+    if (method is String && !buffer.hasRemaining)
+      return MethodCall(method, arguments);
+    else
+      throw const FormatException('Invalid method call');
+  }
+
+  @override
+  ByteData encodeSuccessEnvelope(dynamic result) {
+    final WriteBuffer buffer = WriteBuffer();
+    buffer.putUint8(0);
+    messageCodec.writeValue(buffer, result);
+    return buffer.done();
+  }
+
+  @override
+  ByteData encodeErrorEnvelope(
+      {@required String code, String message, dynamic details}) {
+    final WriteBuffer buffer = WriteBuffer();
+    buffer.putUint8(1);
+    messageCodec.writeValue(buffer, code);
+    messageCodec.writeValue(buffer, message);
+    messageCodec.writeValue(buffer, details);
+    return buffer.done();
+  }
+
+  @override
+  dynamic decodeEnvelope(ByteData envelope) {
+    // First byte is zero in success case, and non-zero otherwise.
+    if (envelope.lengthInBytes == 0)
+      throw const FormatException('Expected envelope, got nothing');
+    final ReadBuffer buffer = ReadBuffer(envelope);
+    if (buffer.getUint8() == 0) return messageCodec.readValue(buffer);
+    final dynamic errorCode = messageCodec.readValue(buffer);
+    final dynamic errorMessage = messageCodec.readValue(buffer);
+    final dynamic errorDetails = messageCodec.readValue(buffer);
+    if (errorCode is String &&
+        (errorMessage == null || errorMessage is String) &&
+        !buffer.hasRemaining)
+      throw PlatformException(
+          code: errorCode, message: errorMessage, details: errorDetails);
+    else
+      throw const FormatException('Invalid envelope');
+  }
+}

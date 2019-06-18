@@ -82,6 +82,7 @@ class LayerSceneBuilder implements ui.SceneBuilder {
     ui.Offset offset = ui.Offset.zero,
     double width = 0.0,
     double height = 0.0,
+    Object webOnlyPaintedBy,
   }) {
     // TODO(b/128317425): implement addPlatformView.
   }

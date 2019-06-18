@@ -128,12 +128,17 @@ class EngineWindow extends ui.Window {
             final Map<String, dynamic> arguments = decoded.arguments;
             domRenderer.setTitle(arguments['label']);
             domRenderer.setThemeColor(ui.Color(arguments['primaryColor']));
+            return;
         }
         break;
 
       case 'flutter/textinput':
         textEditing.handleTextInput(data);
-        break;
+        return;
+
+      case 'flutter/platform_views':
+        handlePlatformViewCall(data, callback);
+        return;
 
       case 'flutter/accessibility':
         // In widget tests we want to bypass processing of platform messages.

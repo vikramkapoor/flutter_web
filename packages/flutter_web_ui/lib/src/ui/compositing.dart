@@ -357,7 +357,10 @@ class SceneBuilder {
 
   void _addTexture(double dx, double dy, double width, double height,
       int textureId, Object webOnlyPaintedBy) {
-    throw UnimplementedError();
+    // In test mode, allow this to be a no-op.
+    if (!debugEmulateFlutterTesterEnvironment) {
+      throw UnimplementedError('Textures are not supported in Flutter Web');
+    }
   }
 
   /// Adds a platform view (e.g an iOS UIView) to the scene.
@@ -376,15 +379,28 @@ class SceneBuilder {
   /// With a platform view in the scene, Quartz has to composite the two Flutter surfaces and the
   /// embedded UIView. In addition to that, on iOS versions greater than 9, the Flutter frames are
   /// synchronized with the UIView frames adding additional performance overhead.
-  void addPlatformView(int viewId,
-      {Offset offset = Offset.zero, double width = 0.0, double height = 0.0}) {
+  void addPlatformView(
+    int viewId, {
+    Offset offset = Offset.zero,
+    double width = 0.0,
+    double height = 0.0,
+    Object webOnlyPaintedBy,
+  }) {
     assert(offset != null, 'Offset argument was null');
-    _addPlatformView(offset.dx, offset.dy, width, height, viewId);
+    _addPlatformView(
+        offset.dx, offset.dy, width, height, viewId, webOnlyPaintedBy);
   }
 
   void _addPlatformView(
-      double dx, double dy, double width, double height, int viewId) {
-    throw UnimplementedError();
+    double dx,
+    double dy,
+    double width,
+    double height,
+    int viewId,
+    Object webOnlyPaintedBy,
+  ) {
+    _addSurface(engine.PersistedPlatformView(
+        webOnlyPaintedBy, viewId, dx, dy, width, height));
   }
 
   /// (Fuchsia-only) Adds a scene rendered by another application to the scene

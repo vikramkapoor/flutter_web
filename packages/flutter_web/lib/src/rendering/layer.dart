@@ -427,6 +427,7 @@ class PlatformViewLayer extends Layer {
       offset: shiftedRect.topLeft,
       width: shiftedRect.width,
       height: shiftedRect.height,
+      webOnlyPaintedBy: _webOnlyPaintedBy,
     );
     return null;
   }
