@@ -36,6 +36,11 @@ class DomRenderer {
   /// Configures the screen, such as scaling.
   html.MetaElement _viewportMeta;
 
+  /// The canvaskit script, downloaded from a CDN. Only created if
+  /// [experimentalUseSkia] is set to true.
+  html.ScriptElement get canvasKitScript => _canvasKitScript;
+  html.ScriptElement _canvasKitScript;
+
   /// The element that contains the [sceneElement].
   ///
   /// This element is created and inserted in the HTML DOM once. It is never
@@ -74,6 +79,7 @@ class DomRenderer {
         _glassPaneElement,
         _styleElement,
         _viewportMeta,
+        _canvasKitScript,
       ]);
     });
   }
@@ -383,6 +389,13 @@ flt-glass-pane * {
           t.cancel();
         }
       });
+    }
+
+    if (experimentalUseSkia) {
+      _canvasKitScript?.remove();
+      _canvasKitScript = html.ScriptElement();
+      _canvasKitScript.src = canvasKitBaseUrl + 'canvaskit.js';
+      html.document.head.append(_canvasKitScript);
     }
 
     _resizeSubscription = html.window.onResize.listen(_metricsDidChange);

@@ -86,7 +86,15 @@ class PictureRecorder {
   /// Creates a new idle PictureRecorder. To associate it with a
   /// [Canvas] and begin recording, pass this [PictureRecorder] to the
   /// [Canvas] constructor.
-  PictureRecorder();
+  factory PictureRecorder() {
+    if (engine.experimentalUseSkia) {
+      return engine.SkPictureRecorder();
+    } else {
+      return PictureRecorder._();
+    }
+  }
+
+  PictureRecorder._();
 
   engine.RecordingCanvas _canvas;
   Rect cullRect;
@@ -1111,7 +1119,15 @@ class Path {
   static RawRecordingCanvas _rawRecorder;
 
   /// Create a new empty [Path] object.
-  Path() : subpaths = <engine.Subpath>[];
+  factory Path() {
+    if (engine.experimentalUseSkia) {
+      return engine.SkPath();
+    } else {
+      return Path._();
+    }
+  }
+
+  Path._() : subpaths = <engine.Subpath>[];
 
   /// Creates a copy of another [Path].
   ///

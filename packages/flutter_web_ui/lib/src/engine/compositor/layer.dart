@@ -40,7 +40,7 @@ class PrerollContext {
 /// A context shared by all layers during the paint pass.
 class PaintContext {
   /// The canvas to paint to.
-  final BitmapCanvas canvas;
+  final SkCanvas canvas;
 
   /// A raster cache potentially containing pre-rendered pictures.
   final RasterCache rasterCache;
@@ -320,7 +320,7 @@ class PhysicalShapeLayer extends ContainerLayer {
           _color.alpha != 0xff);
     }
 
-    final ui.PaintData paint = (ui.Paint()..color = _color).webOnlyPaintData;
+    final ui.Paint paint = ui.Paint()..color = _color;
     if (_clipBehavior != ui.Clip.antiAliasWithSaveLayer) {
       paintContext.canvas.drawPath(_path, paint);
     }
@@ -361,7 +361,7 @@ class PhysicalShapeLayer extends ContainerLayer {
   ///
   /// The blur of the shadow is decided by the [elevation], and the
   /// shadow is painted with the given [color].
-  static void drawShadow(BitmapCanvas canvas, ui.Path path, ui.Color color,
+  static void drawShadow(SkCanvas canvas, ui.Path path, ui.Color color,
       double elevation, bool transparentOccluder) {
     canvas.drawShadow(path, color, elevation, transparentOccluder);
   }

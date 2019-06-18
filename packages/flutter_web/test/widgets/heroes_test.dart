@@ -1515,24 +1515,24 @@ void main() {
                 child: const Text('two'),
                 onPressed: () =>
                     Navigator.push<void>(context, MaterialPageRoute<void>(
-                      builder: (BuildContext context) {
-                        return Material(
-                          child: Hero(
-                            tag: 'a',
-                            child: const Text('bar'),
-                            flightShuttleBuilder: (
-                              BuildContext flightContext,
-                              Animation<double> animation,
-                              HeroFlightDirection flightDirection,
-                              BuildContext fromHeroContext,
-                              BuildContext toHeroContext,
-                            ) {
-                              return const Text('baz');
-                            },
-                          ),
-                        );
-                      },
-                    )),
+                  builder: (BuildContext context) {
+                    return Material(
+                      child: Hero(
+                        tag: 'a',
+                        child: const Text('bar'),
+                        flightShuttleBuilder: (
+                          BuildContext flightContext,
+                          Animation<double> animation,
+                          HeroFlightDirection flightDirection,
+                          BuildContext fromHeroContext,
+                          BuildContext toHeroContext,
+                        ) {
+                          return const Text('baz');
+                        },
+                      ),
+                    );
+                  },
+                )),
               );
             }),
           ],
@@ -1566,19 +1566,19 @@ void main() {
                 child: const Text('two'),
                 onPressed: () =>
                     Navigator.push<void>(context, MaterialPageRoute<void>(
-                      builder: (BuildContext context) {
-                        return Material(
-                          child: Hero(
-                            tag: 'a',
-                            child: const Text('Wolverine'),
-                            placeholderBuilder:
-                                (BuildContext context, Widget child) {
-                              return const Text('Joker');
-                            },
-                          ),
-                        );
-                      },
-                    )),
+                  builder: (BuildContext context) {
+                    return Material(
+                      child: Hero(
+                        tag: 'a',
+                        child: const Text('Wolverine'),
+                        placeholderBuilder:
+                            (BuildContext context, Widget child) {
+                          return const Text('Joker');
+                        },
+                      ),
+                    );
+                  },
+                )),
               );
             }),
           ],

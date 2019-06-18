@@ -16,6 +16,12 @@ Future<void> webOnlyInitializePlatform({
   await webOnlySetAssetManager(assetManager);
   await _fontCollection.ensureFontsLoaded();
   engine.webOnlyInitializeEngine();
+
+  // This needs to be after `webOnlyInitializeEngine` because that is where the
+  // canvaskit script is added to the page.
+  if (engine.experimentalUseSkia) {
+    await engine.initializeSkia();
+  }
   _webOnlyIsInitialized = true;
 }
 

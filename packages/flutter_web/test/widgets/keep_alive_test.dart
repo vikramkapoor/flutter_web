@@ -37,9 +37,9 @@ List<Widget> generateList(Widget child) {
   return List<Widget>.generate(
     100,
     (int index) => Leaf(
-          key: GlobalObjectKey<_LeafState>(index),
-          child: child,
-        ),
+      key: GlobalObjectKey<_LeafState>(index),
+      child: child,
+    ),
     growable: false,
   );
 }

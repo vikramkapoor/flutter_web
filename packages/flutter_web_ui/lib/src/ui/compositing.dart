@@ -47,11 +47,9 @@ class Scene {
 /// [Picture] using a [PictureRecorder] and a [Canvas], and then add
 /// it to the scene using [addPicture].
 class SceneBuilder {
-  static const bool webOnlyUseLayerSceneBuilder = false;
-
   /// Creates an empty [SceneBuilder] object.
   factory SceneBuilder() {
-    if (webOnlyUseLayerSceneBuilder) {
+    if (engine.experimentalUseSkia) {
       return engine.LayerSceneBuilder();
     } else {
       return SceneBuilder._();

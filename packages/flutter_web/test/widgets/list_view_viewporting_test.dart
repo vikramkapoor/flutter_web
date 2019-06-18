@@ -519,10 +519,10 @@ void main() {
           itemExtent: 200.0,
           itemCount: 10,
           itemBuilder: (_, int i) => Container(
-                height: 200.0,
-                width: 200.0,
-                color: i % 2 == 0 ? Colors.black : Colors.red,
-              ),
+            height: 200.0,
+            width: 200.0,
+            color: i % 2 == 0 ? Colors.black : Colors.red,
+          ),
         ),
       ),
     ));

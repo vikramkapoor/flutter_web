@@ -930,16 +930,20 @@ abstract class Window {
   ///  * [RendererBinding], the Flutter framework class which manages layout and
   ///    painting.
   void render(Scene scene) {
-    if (scene is engine.LayerScene) {
-      _rasterizer.draw(scene.layerTree);
+    if (engine.experimentalUseSkia) {
+      final engine.LayerScene layerScene = scene;
+      _rasterizer.draw(layerScene.layerTree);
     } else {
       engine.domRenderer.renderScene(scene.webOnlyRootElement);
     }
   }
 
-  final _rasterizer = engine.Rasterizer(engine.Surface(
-      (engine.BitmapCanvas canvas) =>
-          engine.domRenderer.renderScene(canvas.rootElement)));
+  final engine.Rasterizer _rasterizer = engine.experimentalUseSkia
+      ? engine.Rasterizer(engine.Surface((engine.SkCanvas canvas) {
+          engine.domRenderer.renderScene(canvas.htmlCanvas);
+          canvas.skSurface.callMethod('flush');
+        }))
+      : null;
 
   String get initialLifecycleState => _initialLifecycleState;
 

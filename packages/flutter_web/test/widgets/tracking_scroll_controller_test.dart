@@ -21,9 +21,9 @@ void main() {
               children: List<Widget>.generate(
                 10,
                 (int i) => Container(
-                      height: listItemHeight,
-                      child: Text('Page$index-Item$i'),
-                    ),
+                  height: listItemHeight,
+                  child: Text('Page$index-Item$i'),
+                ),
               ).toList(),
             );
           },
