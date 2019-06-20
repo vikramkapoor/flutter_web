@@ -758,7 +758,10 @@ class SemanticsObject {
     _updateRole(Role.incrementable, isIncrementable);
     _updateRole(Role.scrollable,
         isVerticalScrollContainer || isHorizontalScrollContainer);
-    _updateRole(Role.checkable, hasFlag(ui.SemanticsFlag.hasCheckedState));
+    _updateRole(
+        Role.checkable,
+        hasFlag(ui.SemanticsFlag.hasCheckedState) ||
+            hasFlag(ui.SemanticsFlag.hasToggledState));
     _updateRole(Role.image, isVisualOnly);
     _updateRole(Role.liveRegion, isLiveRegion);
   }

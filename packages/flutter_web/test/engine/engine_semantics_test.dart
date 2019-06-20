@@ -45,8 +45,8 @@ void main() {
   group('text field', () {
     _testTextField();
   });
-  group('checkboxes and radio buttons', () {
-    _testCheckboxesAndRadioButtons();
+  group('checkboxes, radio buttons and switches', () {
+    _testCheckables();
   });
   group('tappable', () {
     _testTappable();
@@ -746,7 +746,82 @@ void _testTextField() {
   });
 }
 
-void _testCheckboxesAndRadioButtons() {
+void _testCheckables() {
+  testWidgets('renders a switched on switch element',
+      (WidgetTester tester) async {
+    semantics()
+      ..debugOverrideTimestampFunction(() => _testTime)
+      ..semanticsEnabled = true;
+
+    final ui.SemanticsUpdateBuilder builder = ui.SemanticsUpdateBuilder();
+    builder.updateNode(
+      id: 0,
+      actions: 0 | SemanticsAction.tap.index,
+      flags: 0 |
+          SemanticsFlag.isEnabled.index |
+          SemanticsFlag.hasToggledState.index |
+          SemanticsFlag.isToggled.index,
+      transform: Matrix4.identity().storage,
+      rect: ui.Rect.fromLTRB(0, 0, 100, 50),
+    );
+
+    semantics().updateSemantics(builder.build());
+    expectSemanticsTree('''
+<sem role="switch" aria-checked="true" style="filter: opacity(0%); color: rgba(0, 0, 0, 0)"></sem>
+''');
+
+    semantics().semanticsEnabled = false;
+  });
+
+  testWidgets('renders a switched on disabled switch element',
+      (WidgetTester tester) async {
+    semantics()
+      ..debugOverrideTimestampFunction(() => _testTime)
+      ..semanticsEnabled = true;
+
+    final ui.SemanticsUpdateBuilder builder = ui.SemanticsUpdateBuilder();
+    builder.updateNode(
+      id: 0,
+      actions: 0 | SemanticsAction.tap.index,
+      flags: 0 |
+          SemanticsFlag.hasToggledState.index |
+          SemanticsFlag.isToggled.index,
+      transform: Matrix4.identity().storage,
+      rect: ui.Rect.fromLTRB(0, 0, 100, 50),
+    );
+
+    semantics().updateSemantics(builder.build());
+    expectSemanticsTree('''
+<sem role="switch" aria-disabled="true" aria-checked="true" style="filter: opacity(0%); color: rgba(0, 0, 0, 0)"></sem>
+''');
+
+    semantics().semanticsEnabled = false;
+  });
+
+  testWidgets('renders a switched off switch element',
+      (WidgetTester tester) async {
+    semantics()
+      ..debugOverrideTimestampFunction(() => _testTime)
+      ..semanticsEnabled = true;
+
+    final ui.SemanticsUpdateBuilder builder = ui.SemanticsUpdateBuilder();
+    builder.updateNode(
+      id: 0,
+      actions: 0 | SemanticsAction.tap.index,
+      flags: 0 |
+          SemanticsFlag.hasToggledState.index |
+          SemanticsFlag.isEnabled.index,
+      transform: Matrix4.identity().storage,
+      rect: ui.Rect.fromLTRB(0, 0, 100, 50),
+    );
+
+    semantics().updateSemantics(builder.build());
+    expectSemanticsTree('''
+<sem role="switch" aria-checked="false" style="filter: opacity(0%); color: rgba(0, 0, 0, 0)"></sem>
+''');
+
+    semantics().semanticsEnabled = false;
+  });
   testWidgets('renders a checked checkbox', (WidgetTester tester) async {
     semantics()
       ..debugOverrideTimestampFunction(() => _testTime)
