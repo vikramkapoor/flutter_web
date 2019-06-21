@@ -54,6 +54,9 @@ void main() {
   group('image', () {
     _testImage();
   });
+  group('header', () {
+    _testHeader();
+  });
   group('live region', () {
     _testLiveRegion();
   });
@@ -177,6 +180,33 @@ void _testEngineSemanticsOwner() {
       expect(semantics().shouldAcceptBrowserGesture('click'), true);
       semantics().semanticsEnabled = false;
     });
+  });
+}
+
+void _testHeader() {
+  testWidgets('renders heading role for headers', (WidgetTester tester) async {
+    semantics()
+      ..debugOverrideTimestampFunction(() => _testTime)
+      ..semanticsEnabled = true;
+
+    final ui.SemanticsUpdateBuilder builder = ui.SemanticsUpdateBuilder();
+    builder.updateNode(
+      id: 0,
+      actions: 0,
+      flags: 0 | SemanticsFlag.isHeader.index,
+      label: 'Header of the page',
+      transform: Matrix4.identity().storage,
+      rect: ui.Rect.fromLTRB(0, 0, 100, 50),
+    );
+
+    semantics().updateSemantics(builder.build());
+    expectSemanticsTree('''
+<sem role="heading" aria-label="Header of the page" style="filter: opacity(0%); color: rgba(0, 0, 0, 0)">
+  <sem-v>Header of the page</sem-v>
+</sem>
+''');
+
+    semantics().semanticsEnabled = false;
   });
 }
 
