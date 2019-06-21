@@ -316,7 +316,6 @@ class FakeHtmlPlatformViewsController {
     final double width = args['width'];
     final double height = args['height'];
     final int layoutDirection = args['direction'];
-    final Uint8List creationParams = args['params'];
 
     if (_views.containsKey(id))
       throw PlatformException(

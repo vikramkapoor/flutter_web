@@ -14,14 +14,13 @@ Future<void> initializeSkia() {
   StreamSubscription<html.Event> loadSubscription;
   loadSubscription = domRenderer.canvasKitScript.onLoad.listen((_) {
     loadSubscription.cancel();
-    js.JsObject canvasKitInitArgs = js.JsObject.jsify({
+    final js.JsObject canvasKitInitArgs = js.JsObject.jsify(<dynamic, dynamic>{
       'locateFile': js.allowInterop((String file) => canvasKitBaseUrl + file)
     });
-    js.JsObject canvasKitInit =
+    final js.JsObject canvasKitInit =
         js.JsObject(js.context['CanvasKitInit'], <dynamic>[canvasKitInitArgs]);
-    js.JsObject canvasKitInitPromise = canvasKitInit.callMethod('ready');
-    js.JsObject canvasKitInitReady =
-        canvasKitInitPromise.callMethod('then', <dynamic>[
+    final js.JsObject canvasKitInitPromise = canvasKitInit.callMethod('ready');
+    canvasKitInitPromise.callMethod('then', <dynamic>[
       js.allowInterop((js.JsObject ck) {
         canvasKit = ck;
         canvasKitCompleter.complete();

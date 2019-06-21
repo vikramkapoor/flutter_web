@@ -50,7 +50,7 @@ class SkCanvas {
   }
 
   void clipPath(ui.Path path) {
-    SkPath skPath = path;
+    final SkPath skPath = path;
     skCanvas.callMethod('clipPath', <js.JsObject>[skPath._skPath]);
   }
 
@@ -91,13 +91,8 @@ class SkCanvas {
         <double>[rect.left, rect.top, rect.right, rect.bottom]);
   }
 
-  js.JsObject _makeSkColor(ui.Color color) {
-    return js.JsObject(canvasKit['Color'],
-        <num>[color.red, color.green, color.blue, color.opacity]);
-  }
-
   js.JsObject _makeSkPaint(ui.Paint paint) {
-    final skPaint = js.JsObject(canvasKit['SkPaint']);
+    final js.JsObject skPaint = js.JsObject(canvasKit['SkPaint']);
     if (paint.color != null) {
       skPaint.callMethod('setColor', <int>[paint.color.value]);
     }
