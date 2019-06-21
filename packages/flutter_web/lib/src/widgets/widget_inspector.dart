@@ -12,7 +12,6 @@ import 'dart:typed_data';
 import 'package:flutter_web_ui/ui.dart' as ui
     show
         ClipOp,
-        EngineLayer,
         Image,
         ImageByteFormat,
         Paragraph,
@@ -57,9 +56,8 @@ class _ProxyLayer extends Layer {
   final Layer _layer;
 
   @override
-  ui.EngineLayer addToScene(ui.SceneBuilder builder,
-      [Offset layerOffset = Offset.zero]) {
-    return _layer.addToScene(builder, layerOffset);
+  void addToScene(ui.SceneBuilder builder, [Offset layerOffset = Offset.zero]) {
+    _layer.addToScene(builder, layerOffset);
   }
 
   @override
@@ -335,10 +333,8 @@ Rect _calculateSubtreeBounds(RenderObject object) {
 /// screenshots render to the scene in the local coordinate system of the layer.
 class _ScreenshotContainerLayer extends OffsetLayer {
   @override
-  ui.EngineLayer addToScene(ui.SceneBuilder builder,
-      [Offset layerOffset = Offset.zero]) {
+  void addToScene(ui.SceneBuilder builder, [Offset layerOffset = Offset.zero]) {
     addChildrenToScene(builder, layerOffset);
-    return null; // this does not have an engine layer.
   }
 }
 
@@ -399,12 +395,11 @@ class _ScreenshotData {
 /// render object.
 class _ScreenshotPaintingContext extends PaintingContext {
   _ScreenshotPaintingContext({
-    @required Object webOnlyPaintedBy,
     @required ContainerLayer containerLayer,
     @required Rect estimatedBounds,
     @required _ScreenshotData screenshotData,
   })  : _data = screenshotData,
-        super(webOnlyPaintedBy, containerLayer, estimatedBounds);
+        super(containerLayer, estimatedBounds);
 
   final _ScreenshotData _data;
 
@@ -508,7 +503,6 @@ class _ScreenshotPaintingContext extends PaintingContext {
       return super.createChildContext(childLayer, bounds);
     } else {
       return _ScreenshotPaintingContext(
-        webOnlyPaintedBy: webOnlyPaintedBy,
         containerLayer: childLayer,
         estimatedBounds: bounds,
         screenshotData: _data,
@@ -573,7 +567,6 @@ class _ScreenshotPaintingContext extends PaintingContext {
     assert(repaintBoundary != null);
     final _ScreenshotData data = _ScreenshotData(target: renderObject);
     final _ScreenshotPaintingContext context = _ScreenshotPaintingContext(
-      webOnlyPaintedBy: renderObject,
       containerLayer: repaintBoundary.debugLayer,
       estimatedBounds: repaintBoundary.paintBounds,
       screenshotData: data,
@@ -585,7 +578,8 @@ class _ScreenshotPaintingContext extends PaintingContext {
       // want to capture debugPaint information as well.
       data.containerLayer.append(_ProxyLayer(repaintBoundary.layer));
       data.foundTarget = true;
-      data.screenshotOffset = repaintBoundary.layer.offset;
+      final OffsetLayer repaintBoundaryLayer = repaintBoundary.layer;
+      data.screenshotOffset = repaintBoundaryLayer.offset;
     } else {
       // Repaint everything under the repaint boundary.
       // We call debugInstrumentRepaintCompositedChild instead of paintChild as
@@ -2694,9 +2688,8 @@ class _InspectorOverlayLayer extends Layer {
   double _textPainterMaxWidth;
 
   @override
-  ui.EngineLayer addToScene(ui.SceneBuilder builder,
-      [Offset layerOffset = Offset.zero]) {
-    if (!selection.active) return null;
+  void addToScene(ui.SceneBuilder builder, [Offset layerOffset = Offset.zero]) {
+    if (!selection.active) return;
 
     final RenderObject selected = selection.current;
     final List<_TransformedRect> candidates = <_TransformedRect>[];
@@ -2717,9 +2710,7 @@ class _InspectorOverlayLayer extends Layer {
       _lastState = state;
       _picture = _buildPicture(state);
     }
-    builder.addPicture(layerOffset, _picture,
-        webOnlyPaintedBy: webOnlyPaintedBy);
-    return null; // this does not have an engine layer.
+    builder.addPicture(layerOffset, _picture);
   }
 
   ui.Picture _buildPicture(_InspectorOverlayRenderState state) {

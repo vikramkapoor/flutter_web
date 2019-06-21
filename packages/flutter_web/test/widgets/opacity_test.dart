@@ -5,6 +5,7 @@
 import 'package:flutter_web/io.dart';
 import 'package:flutter_web_ui/ui.dart';
 
+import 'package:flutter_web/rendering.dart';
 import 'package:flutter_web/widgets.dart';
 import 'package:flutter_web_test/flutter_web_test.dart';
 import 'package:flutter_web/material.dart';
@@ -206,7 +207,7 @@ void main() {
         find.byType(RepaintBoundary).first.evaluate().single;
     // The following line will send the layer to engine and cause crash if an
     // empty opacity layer is sent.
-    await element.renderObject.layer
-        .toImage(const Rect.fromLTRB(0.0, 0.0, 1.0, 1.0));
+    final OffsetLayer offsetLayer = element.renderObject.layer;
+    await offsetLayer.toImage(const Rect.fromLTRB(0.0, 0.0, 1.0, 1.0));
   }, skip: true);
 }

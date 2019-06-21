@@ -45,8 +45,8 @@ mixin _DomClip on PersistedContainerSurface {
   }
 
   @override
-  void recycle() {
-    super.recycle();
+  void discard() {
+    super.discard();
 
     // Do not detach the child container from the root. It is permanently
     // attached. The elements are reused together and are detached from the DOM
@@ -57,7 +57,7 @@ mixin _DomClip on PersistedContainerSurface {
 
 /// A surface that creates a rectangular clip.
 class PersistedClipRect extends PersistedContainerSurface with _DomClip {
-  PersistedClipRect(Object paintedBy, this.rect) : super(paintedBy);
+  PersistedClipRect(PersistedClipRect oldLayer, this.rect) : super(oldLayer);
 
   final ui.Rect rect;
 
@@ -100,8 +100,8 @@ class PersistedClipRect extends PersistedContainerSurface with _DomClip {
 
 /// A surface that creates a rounded rectangular clip.
 class PersistedClipRRect extends PersistedContainerSurface with _DomClip {
-  PersistedClipRRect(Object paintedBy, this.rrect, this.clipBehavior)
-      : super(paintedBy);
+  PersistedClipRRect(ui.EngineLayer oldLayer, this.rrect, this.clipBehavior)
+      : super(oldLayer);
 
   final ui.RRect rrect;
   // TODO(yjbanov): can this be controlled in the browser?
@@ -149,11 +149,11 @@ class PersistedClipRRect extends PersistedContainerSurface with _DomClip {
 }
 
 class PersistedPhysicalShape extends PersistedContainerSurface with _DomClip {
-  PersistedPhysicalShape(Object paintedBy, this.path, this.elevation, int color,
-      int shadowColor, this.clipBehavior)
+  PersistedPhysicalShape(PersistedPhysicalShape oldLayer, this.path,
+      this.elevation, int color, int shadowColor, this.clipBehavior)
       : color = ui.Color(color),
         shadowColor = ui.Color(shadowColor),
-        super(paintedBy);
+        super(oldLayer);
 
   final ui.Path path;
   final double elevation;
@@ -318,8 +318,9 @@ class PersistedPhysicalShape extends PersistedContainerSurface with _DomClip {
 
 /// A surface that clips it's children.
 class PersistedClipPath extends PersistedContainerSurface {
-  PersistedClipPath(Object paintedBy, this.clipPath, this.clipBehavior)
-      : super(paintedBy);
+  PersistedClipPath(
+      PersistedClipPath oldLayer, this.clipPath, this.clipBehavior)
+      : super(oldLayer);
 
   final ui.Path clipPath;
   final ui.Clip clipBehavior;
@@ -365,9 +366,9 @@ class PersistedClipPath extends PersistedContainerSurface {
   }
 
   @override
-  void recycle() {
+  void discard() {
     _clipElement?.remove();
     _clipElement = null;
-    super.recycle();
+    super.discard();
   }
 }

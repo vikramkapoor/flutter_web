@@ -42,17 +42,14 @@ class LayerSceneBuilder implements ui.SceneBuilder {
   }
 
   @override
-  void addPerformanceOverlay(int enabledOptions, ui.Rect bounds,
-      {Object webOnlyPaintedBy}) {
+  void addPerformanceOverlay(int enabledOptions, ui.Rect bounds) {
     // We don't plan to implement this on the web.
     throw UnimplementedError();
   }
 
   @override
   void addPicture(ui.Offset offset, ui.Picture picture,
-      {bool isComplexHint = false,
-      bool willChangeHint = false,
-      Object webOnlyPaintedBy}) {
+      {bool isComplexHint = false, bool willChangeHint = false}) {
     currentLayer
         .add(PictureLayer(picture, offset, isComplexHint, willChangeHint));
   }
@@ -71,8 +68,7 @@ class LayerSceneBuilder implements ui.SceneBuilder {
       {ui.Offset offset = ui.Offset.zero,
       double width = 0.0,
       double height = 0.0,
-      bool freeze = false,
-      Object webOnlyPaintedBy}) {
+      bool freeze = false}) {
     // TODO(b/128315641): implement addTexture.
   }
 
@@ -102,39 +98,39 @@ class LayerSceneBuilder implements ui.SceneBuilder {
 
   @override
   ui.EngineLayer pushBackdropFilter(ui.ImageFilter filter,
-      {Object webOnlyPaintedBy}) {
+      {ui.EngineLayer oldLayer}) {
     throw UnimplementedError();
   }
 
   @override
   ui.EngineLayer pushClipPath(ui.Path path,
-      {ui.Clip clipBehavior = ui.Clip.antiAlias, Object webOnlyPaintedBy}) {
+      {ui.Clip clipBehavior = ui.Clip.antiAlias, ui.EngineLayer oldLayer}) {
     pushLayer(ClipPathLayer(path));
     return null;
   }
 
   @override
   ui.EngineLayer pushClipRRect(ui.RRect rrect,
-      {ui.Clip clipBehavior, Object webOnlyPaintedBy}) {
+      {ui.Clip clipBehavior, ui.EngineLayer oldLayer}) {
     pushLayer(ClipRRectLayer(rrect));
     return null;
   }
 
   @override
   ui.EngineLayer pushClipRect(ui.Rect rect,
-      {ui.Clip clipBehavior = ui.Clip.antiAlias, Object webOnlyPaintedBy}) {
+      {ui.Clip clipBehavior = ui.Clip.antiAlias, ui.EngineLayer oldLayer}) {
     pushLayer(ClipRectLayer(rect));
     return null;
   }
 
   @override
   ui.EngineLayer pushColorFilter(ui.Color color, ui.BlendMode blendMode,
-      {Object webOnlyPaintedBy}) {
+      {ui.EngineLayer oldLayer}) {
     throw UnimplementedError();
   }
 
   @override
-  ui.EngineLayer pushOffset(double dx, double dy, {Object webOnlyPaintedBy}) {
+  ui.EngineLayer pushOffset(double dx, double dy, {ui.EngineLayer oldLayer}) {
     final Matrix4 matrix = Matrix4.translationValues(dx, dy, 0.0);
     final TransformLayer layer = TransformLayer(matrix);
     pushLayer(layer);
@@ -143,20 +139,21 @@ class LayerSceneBuilder implements ui.SceneBuilder {
 
   @override
   ui.EngineLayer pushOpacity(int alpha,
-      {Object webOnlyPaintedBy, ui.Offset offset = ui.Offset.zero}) {
+      {ui.EngineLayer oldLayer, ui.Offset offset = ui.Offset.zero}) {
     // TODO(het): Implement opacity
     pushOffset(0.0, 0.0);
     return null;
   }
 
   @override
-  ui.EngineLayer pushPhysicalShape(
-      {ui.Path path,
-      double elevation,
-      ui.Color color,
-      ui.Color shadowColor,
-      ui.Clip clipBehavior = ui.Clip.none,
-      Object webOnlyPaintedBy}) {
+  ui.EngineLayer pushPhysicalShape({
+    ui.Path path,
+    double elevation,
+    ui.Color color,
+    ui.Color shadowColor,
+    ui.Clip clipBehavior = ui.Clip.none,
+    ui.EngineLayer oldLayer,
+  }) {
     final PhysicalShapeLayer layer =
         PhysicalShapeLayer(elevation, color, shadowColor, path, clipBehavior);
     pushLayer(layer);
@@ -166,12 +163,12 @@ class LayerSceneBuilder implements ui.SceneBuilder {
   @override
   ui.EngineLayer pushShaderMask(
       ui.Shader shader, ui.Rect maskRect, ui.BlendMode blendMode,
-      {Object webOnlyPaintedBy}) {
+      {ui.EngineLayer oldLayer}) {
     throw UnimplementedError();
   }
 
   @override
-  ui.EngineLayer pushTransform(Float64List matrix4, {Object webOnlyPaintedBy}) {
+  ui.EngineLayer pushTransform(Float64List matrix4, {ui.EngineLayer oldLayer}) {
     final Matrix4 matrix = Matrix4.fromList(matrix4);
     pushLayer(TransformLayer(matrix));
     return null;

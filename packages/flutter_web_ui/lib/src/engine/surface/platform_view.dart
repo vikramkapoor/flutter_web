@@ -11,9 +11,7 @@ class PersistedPlatformView extends PersistedLeafSurface {
   html.HtmlElement _hostElement;
   html.ShadowRoot _shadowRoot;
 
-  PersistedPlatformView(
-      Object paintedBy, this.viewId, this.dx, this.dy, this.width, this.height)
-      : super(paintedBy);
+  PersistedPlatformView(this.viewId, this.dx, this.dy, this.width, this.height);
 
   @override
   html.Element createElement() {
@@ -41,5 +39,10 @@ class PersistedPlatformView extends PersistedLeafSurface {
       ..transform = 'translate(${dx}px, ${dy}px)'
       ..width = '${width}px'
       ..height = '${height}px';
+  }
+
+  @override
+  double matchForUpdate(PersistedPlatformView existingSurface) {
+    return existingSurface.viewId == viewId ? 0.0 : 1.0;
   }
 }

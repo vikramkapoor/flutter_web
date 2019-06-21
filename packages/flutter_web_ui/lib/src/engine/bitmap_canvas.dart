@@ -10,7 +10,13 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
   /// system's origin, within which this canvas paints.
   ///
   /// Painting outside these bounds will result in cropping.
-  ui.Rect bounds;
+  ui.Rect get bounds => _bounds;
+  set bounds(ui.Rect newValue) {
+    assert(newValue != null);
+    _bounds = newValue;
+  }
+
+  ui.Rect _bounds;
 
   /// The amount of padding to add around the edges of this canvas to
   /// ensure that anti-aliased arcs are not clipped.
@@ -23,7 +29,7 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
   html.CanvasRenderingContext2D _ctx;
 
   /// The size of the paint [bounds].
-  ui.Size get size => bounds.size;
+  ui.Size get size => _bounds.size;
 
   /// The last paragraph style is cached to optimize the case where the style
   /// hasn't changed.
@@ -72,7 +78,7 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
   /// This canvas can be reused by pictures with different paint bounds as long
   /// as the [Rect.size] of the bounds fully fit within the size used to
   /// initialize this canvas.
-  BitmapCanvas(this.bounds) {
+  BitmapCanvas(this._bounds) : assert(_bounds != null) {
     rootElement.style.position = 'absolute';
 
     // Adds one extra pixel to the requested size. This is to compensate for
@@ -179,20 +185,20 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
 
     // The flooring of the value is to ensure that canvas' top-left corner
     // lands on the physical pixel.
-    final int canvasPositionX = bounds.left.floor() - paddingPixels;
-    final int canvasPositionY = bounds.top.floor() - paddingPixels;
+    final int canvasPositionX = _bounds.left.floor() - paddingPixels;
+    final int canvasPositionY = _bounds.top.floor() - paddingPixels;
     final double canvasPositionCorrectionX =
-        bounds.left - paddingPixels - canvasPositionX.toDouble();
+        _bounds.left - paddingPixels - canvasPositionX.toDouble();
     final double canvasPositionCorrectionY =
-        bounds.top - paddingPixels - canvasPositionY.toDouble();
+        _bounds.top - paddingPixels - canvasPositionY.toDouble();
 
     rootElement.style.transform =
         'translate(${canvasPositionX}px, ${canvasPositionY}px)';
 
     // This compensates for the translate on the `rootElement`.
     translate(
-      -bounds.left + canvasPositionCorrectionX + paddingPixels,
-      -bounds.top + canvasPositionCorrectionY + paddingPixels,
+      -_bounds.left + canvasPositionCorrectionX + paddingPixels,
+      -_bounds.top + canvasPositionCorrectionY + paddingPixels,
     );
   }
 

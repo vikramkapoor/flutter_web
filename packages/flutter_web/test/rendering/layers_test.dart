@@ -21,7 +21,7 @@ void main() {
     );
     layout(root, phase: EnginePhase.paint);
     expect(inner.isRepaintBoundary, isFalse);
-    expect(() => inner.layer, throwsAssertionError);
+    expect(inner.layer, isNull);
     expect(boundary.isRepaintBoundary, isTrue);
     expect(boundary.layer, isNotNull);
     expect(boundary.layer.attached, isTrue); // this time it painted...
@@ -29,7 +29,7 @@ void main() {
     root.opacity = 0.0;
     pumpFrame(phase: EnginePhase.paint);
     expect(inner.isRepaintBoundary, isFalse);
-    expect(() => inner.layer, throwsAssertionError);
+    expect(inner.layer, isNull);
     expect(boundary.isRepaintBoundary, isTrue);
     expect(boundary.layer, isNotNull);
     expect(boundary.layer.attached, isFalse); // this time it did not.
@@ -37,7 +37,7 @@ void main() {
     root.opacity = 0.5;
     pumpFrame(phase: EnginePhase.paint);
     expect(inner.isRepaintBoundary, isFalse);
-    expect(() => inner.layer, throwsAssertionError);
+    expect(inner.layer, isNull);
     expect(boundary.isRepaintBoundary, isTrue);
     expect(boundary.layer, isNotNull);
     expect(boundary.layer.attached, isTrue); // this time it did again!

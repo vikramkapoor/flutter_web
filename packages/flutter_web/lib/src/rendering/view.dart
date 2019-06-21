@@ -132,7 +132,6 @@ class RenderView extends RenderObject
   Layer _updateMatricesAndCreateNewRootLayer() {
     _rootTransform = configuration.toMatrix();
     final ContainerLayer rootLayer = TransformLayer(transform: _rootTransform);
-    rootLayer.webOnlyPaintedBy = this;
     rootLayer.attach(this);
     assert(_rootTransform != null);
     return rootLayer;

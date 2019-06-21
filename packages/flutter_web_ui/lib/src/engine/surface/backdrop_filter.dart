@@ -6,7 +6,8 @@ part of engine;
 
 /// A surface that applies an image filter to background.
 class PersistedBackdropFilter extends PersistedContainerSurface {
-  PersistedBackdropFilter(Object paintedBy, this.filter) : super(paintedBy);
+  PersistedBackdropFilter(PersistedBackdropFilter oldLayer, this.filter)
+      : super(oldLayer);
 
   final ui.ImageFilter filter;
 
@@ -47,8 +48,8 @@ class PersistedBackdropFilter extends PersistedContainerSurface {
   }
 
   @override
-  void recycle() {
-    super.recycle();
+  void discard() {
+    super.discard();
     // Do not detach the child container from the root. It is permanently
     // attached. The elements are reused together and are detached from the DOM
     // together.

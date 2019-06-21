@@ -6,7 +6,7 @@ part of engine;
 
 /// A surface that translates its children using CSS transform and translate.
 class PersistedOffset extends PersistedContainerSurface {
-  PersistedOffset(Object paintedBy, this.dx, this.dy) : super(paintedBy);
+  PersistedOffset(PersistedOffset oldLayer, this.dx, this.dy) : super(oldLayer);
 
   /// Horizontal displacement.
   final double dx;

@@ -496,8 +496,6 @@ class RenderHtmlView extends RenderBox {
     _sizePlatformView();
   }
 
-  Size _currentHtmlViewSize;
-
   Future<void> _sizePlatformView() async {
     if (_state == _PlatformViewState.resizing) {
       return;
@@ -510,7 +508,6 @@ class RenderHtmlView extends RenderBox {
     do {
       targetSize = size;
       await _viewController.setSize(targetSize);
-      _currentHtmlViewSize = targetSize;
       // We've resized the platform view to targetSize, but it is possible that
       // while we were resizing the render object's size was changed again.
       // In that case we will resize the platform view again.
