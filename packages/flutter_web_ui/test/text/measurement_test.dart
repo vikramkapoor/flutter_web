@@ -14,8 +14,12 @@ const ui.ParagraphConstraints constraints = ui.ParagraphConstraints(width: 50);
 const ui.ParagraphConstraints infiniteConstraints =
     ui.ParagraphConstraints(width: double.infinity);
 
-ui.Paragraph build(ui.ParagraphStyle style, String text) {
+ui.Paragraph build(ui.ParagraphStyle style, String text,
+    {ui.TextStyle textStyle}) {
   final ui.ParagraphBuilder builder = ui.ParagraphBuilder(style);
+  if (textStyle != null) {
+    builder.pushStyle(textStyle);
+  }
   builder.addText(text);
   return builder.build();
 }
@@ -322,34 +326,22 @@ void main() {
       }
     });
 
-    test('takes letter spacing into account', () {
-      const ui.ParagraphConstraints constraints =
-          ui.ParagraphConstraints(width: 100);
+    testMeasurements(
+      'takes letter spacing into account',
+      (TextMeasurementService instance) {
+        const ui.ParagraphConstraints constraints =
+            ui.ParagraphConstraints(width: 100);
+        final ui.TextStyle spacedTextStyle = ui.TextStyle(letterSpacing: 3);
+        final ui.Paragraph spacedText =
+            build(ahemStyle, 'abc', textStyle: spacedTextStyle);
 
-      final ui.ParagraphBuilder normalBuilder = ui.ParagraphBuilder(ahemStyle);
-      normalBuilder.addText('abc');
-      final ui.Paragraph normalText = normalBuilder.build();
+        final MeasurementResult spacedResult =
+            instance.measure(spacedText, constraints);
 
-      final ui.ParagraphBuilder spacedBuilder = ui.ParagraphBuilder(ahemStyle);
-      spacedBuilder.pushStyle(ui.TextStyle(letterSpacing: 1.5));
-      spacedBuilder.addText('abc');
-      final ui.Paragraph spacedText = spacedBuilder.build();
-
-      // Letter spacing is only supported via DOM measurement.
-      final TextMeasurementService instance =
-          TextMeasurementService.forParagraph(spacedText);
-      expect(instance, isInstanceOf<DomTextMeasurementService>());
-
-      final MeasurementResult normalResult =
-          instance.measure(normalText, constraints);
-      final MeasurementResult spacedResult =
-          instance.measure(spacedText, constraints);
-
-      expect(
-        normalResult.maxIntrinsicWidth < spacedResult.maxIntrinsicWidth,
-        isTrue,
-      );
-    });
+        expect(spacedResult.minIntrinsicWidth, 39);
+        expect(spacedResult.maxIntrinsicWidth, 39);
+      },
+    );
 
     test('takes word spacing into account', () {
       const ui.ParagraphConstraints constraints =

@@ -166,7 +166,6 @@ abstract class TextMeasurementService {
   ///
   /// This is only used for testing at the moment. Once the implementation is
   /// complete and production-ready, we'll get rid of this flag.
-  @visibleForTesting
   static bool enableExperimentalCanvasImplementation = false;
 
   /// Gets the appropriate [TextMeasurementService] instance for the given
@@ -193,13 +192,11 @@ abstract class TextMeasurementService {
     // Currently, the canvas-based approach only works on plain text that
     // doesn't have any of the following styles:
     // - decoration
-    // - letter spacing
     // - word spacing
     final ParagraphGeometricStyle style =
         paragraph.webOnlyGetParagraphGeometricStyle();
     return paragraph.webOnlyGetPlainText() != null &&
         style.decoration == null &&
-        style.letterSpacing == null &&
         style.wordSpacing == null;
   }
 
@@ -208,6 +205,7 @@ abstract class TextMeasurementService {
     ui.Paragraph paragraph,
     ui.ParagraphConstraints constraints,
   ) {
+    assert(rulerManager != null);
     final ParagraphGeometricStyle style =
         paragraph.webOnlyGetParagraphGeometricStyle();
     final ParagraphRuler ruler =
@@ -369,6 +367,7 @@ class DomTextMeasurementService extends TextMeasurementService {
       width: width,
       height: height,
       naturalHeight: height,
+      lineHeight: height,
       minIntrinsicWidth: minIntrinsicWidth,
       maxIntrinsicWidth: maxIntrinsicWidth,
       alphabeticBaseline: alphabeticBaseline,
@@ -396,12 +395,13 @@ class DomTextMeasurementService extends TextMeasurementService {
     final double naturalHeight = ruler.constrainedDimensions.height;
 
     double height;
+    double lineHeight;
     final int maxLines = paragraph.webOnlyGetParagraphGeometricStyle().maxLines;
     if (maxLines == null) {
       height = naturalHeight;
     } else {
       // Lazily compute [lineHeight] when [maxLines] is not null.
-      final double lineHeight = ruler.lineHeightDimensions.height;
+      lineHeight = ruler.lineHeightDimensions.height;
       height = math.min(naturalHeight, maxLines * lineHeight);
     }
 
@@ -414,6 +414,7 @@ class DomTextMeasurementService extends TextMeasurementService {
       isSingleLine: false,
       width: width,
       height: height,
+      lineHeight: lineHeight,
       naturalHeight: naturalHeight,
       minIntrinsicWidth: minIntrinsicWidth,
       maxIntrinsicWidth: maxIntrinsicWidth,
@@ -478,9 +479,9 @@ class CanvasTextMeasurementService extends TextMeasurementService {
     final LinesCalculator linesCalculator =
         LinesCalculator(_canvasContext, text, style, constraints.width);
     final MinIntrinsicCalculator minIntrinsicCalculator =
-        MinIntrinsicCalculator(_canvasContext, text);
+        MinIntrinsicCalculator(_canvasContext, text, style);
     final MaxIntrinsicCalculator maxIntrinsicCalculator =
-        MaxIntrinsicCalculator(_canvasContext, text);
+        MaxIntrinsicCalculator(_canvasContext, text, style);
 
     // Indicates whether we've reached the end of text or not. Even if the index
     // [i] reaches the end of text, we don't want to stop looping until we hit
@@ -518,6 +519,7 @@ class CanvasTextMeasurementService extends TextMeasurementService {
       ideographicBaseline: ruler.alphabeticBaseline * _baselineRatioHack,
       height: height,
       naturalHeight: naturalHeight,
+      lineHeight: lineHeight,
       // `minIntrinsicWidth` is the greatest width of text that can't
       // be broken down into multiple lines.
       minIntrinsicWidth: minIntrinsicCalculator.value,
@@ -536,7 +538,13 @@ class CanvasTextMeasurementService extends TextMeasurementService {
     final ParagraphGeometricStyle style =
         paragraph.webOnlyGetParagraphGeometricStyle();
     _canvasContext.font = style.cssFontString;
-    return _measureSubstring(_canvasContext, text, start, end);
+    return _measureSubstring(
+      _canvasContext,
+      paragraph.webOnlyGetParagraphGeometricStyle(),
+      text,
+      start,
+      end,
+    );
   }
 }
 
@@ -547,6 +555,7 @@ class CanvasTextMeasurementService extends TextMeasurementService {
 int _lastStart = -1;
 int _lastEnd = -1;
 String _lastText = '';
+ParagraphGeometricStyle _lastStyle;
 double _lastWidth = -1;
 
 /// Measures the width of the substring of [text] starting from the index
@@ -556,6 +565,7 @@ double _lastWidth = -1;
 /// [_canvasContext].
 double _measureSubstring(
   html.CanvasRenderingContext2D _canvasContext,
+  ParagraphGeometricStyle style,
   String text,
   int start,
   int end,
@@ -566,15 +576,22 @@ double _measureSubstring(
     return 0;
   }
 
-  if (start == _lastStart && end == _lastEnd && text == _lastText) {
+  if (start == _lastStart &&
+      end == _lastEnd &&
+      text == _lastText &&
+      _lastStyle == style) {
     return _lastWidth;
   }
   _lastStart = start;
   _lastEnd = end;
   _lastText = text;
+  _lastStyle = style;
 
-  final String sub = text.substring(start, end);
-  final double width = _canvasContext.measureText(sub).width;
+  final double letterSpacing = style.letterSpacing ?? 0.0;
+  final String sub =
+      start == 0 && end == text.length ? text : text.substring(start, end);
+  final double width =
+      _canvasContext.measureText(sub).width + letterSpacing * sub.length;
 
   // What we are doing here is we are rounding to the nearest 2nd decimal
   // point. So 39.999423 becomes 40, and 11.243982 becomes 11.24.
@@ -643,7 +660,12 @@ class LinesCalculator {
     // doesn't fit in a single line. That's why we need a loop.
     while (!_reachedMaxLines) {
       final double lineWidth = _measureSubstring(
-          _canvasContext, _text, _lineStart, chunkEndWithoutSpace);
+        _canvasContext,
+        _style,
+        _text,
+        _lineStart,
+        chunkEndWithoutSpace,
+      );
 
       // The current chunk doesn't reach the maximum width, so we stop here and
       // wait for the next line break.
@@ -728,7 +750,8 @@ class LinesCalculator {
     int high = end;
     do {
       final int mid = (low + high) ~/ 2;
-      final double width = _measureSubstring(_canvasContext, text, start, mid);
+      final double width =
+          _measureSubstring(_canvasContext, _style, text, start, mid);
       if (width < maxWidth) {
         low = mid;
       } else if (width > maxWidth) {
@@ -746,10 +769,11 @@ class LinesCalculator {
 /// During the text layout phase, this class takes care of calculating the
 /// minimum intrinsic width of the given text.
 class MinIntrinsicCalculator {
-  MinIntrinsicCalculator(this._canvasContext, this._text);
+  MinIntrinsicCalculator(this._canvasContext, this._text, this._style);
 
   final html.CanvasRenderingContext2D _canvasContext;
   final String _text;
+  final ParagraphGeometricStyle _style;
 
   /// The value of minimum intrinsic width calculated so far.
   double value = 0.0;
@@ -765,7 +789,7 @@ class MinIntrinsicCalculator {
     final int chunkEndWithoutSpace =
         _excludeTrailing(_text, _lastChunkEnd, chunkEnd, _whitespacePredicate);
     final double width = _measureSubstring(
-        _canvasContext, _text, _lastChunkEnd, chunkEndWithoutSpace);
+        _canvasContext, _style, _text, _lastChunkEnd, chunkEndWithoutSpace);
     if (width > value) {
       value = width;
     }
@@ -776,10 +800,11 @@ class MinIntrinsicCalculator {
 /// During text layout, this class is responsible for calculating the maximum
 /// intrinsic width of the given text.
 class MaxIntrinsicCalculator {
-  MaxIntrinsicCalculator(this._canvasContext, this._text);
+  MaxIntrinsicCalculator(this._canvasContext, this._text, this._style);
 
   final html.CanvasRenderingContext2D _canvasContext;
   final String _text;
+  final ParagraphGeometricStyle _style;
 
   /// The value of maximum intrinsic width calculated so far.
   double value = 0.0;
@@ -803,7 +828,12 @@ class MaxIntrinsicCalculator {
       _newlinePredicate,
     );
     final double lineWidth = _measureSubstring(
-        _canvasContext, _text, _lastHardLineEnd, hardLineEndWithoutNewlines);
+      _canvasContext,
+      _style,
+      _text,
+      _lastHardLineEnd,
+      hardLineEndWithoutNewlines,
+    );
     if (lineWidth > value) {
       value = lineWidth;
     }

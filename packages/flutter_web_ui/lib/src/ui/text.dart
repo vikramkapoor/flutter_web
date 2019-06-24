@@ -1364,6 +1364,11 @@ class Paragraph {
   /// Valid only after [layout] has been called.
   double get _naturalHeight => _measurementResult?.naturalHeight ?? 0;
 
+  /// The amount of vertical space one line of this paragraph occupies.
+  ///
+  /// Valid only after [layout] has been called.
+  double get webOnlyLineHeight => _measurementResult?.lineHeight ?? 0;
+
   /// The distance from the left edge of the leftmost glyph to the right edge of
   /// the rightmost glyph in the paragraph.
   ///
@@ -1419,6 +1424,10 @@ class Paragraph {
   /// Returns horizontal alignment offset for single line text when rendering
   /// directly into a canvas without css text alignment styling.
   double webOnlyAlignOffset = 0.0;
+
+  /// If not null, this list would contain the strings representing each line
+  /// in the paragraph.
+  List<String> get webOnlyLines => _measurementResult?.lines;
 
   /// Computes the size and position of each glyph in the paragraph.
   ///
@@ -1483,18 +1492,31 @@ class Paragraph {
 
   /// Returns `true` if this paragraph can be directly painted to the canvas.
   ///
-  /// For now, we can only draw paragraphs onto the canvas directly if they
-  /// are on a single line and do not use rich text. We also use fallback
-  /// for decorations, since Canvas doesn't support them.
+  ///
+  /// Examples of paragraphs that can't be drawn directly on the canvas:
+  ///
+  /// - Rich text where there are multiple pieces of text that have different
+  ///   styles.
+  /// - Paragraphs that contain decorations.
+  /// - Paragraphs that have a non-null word-spacing.
+  /// - Paragraphs with a background.
   // TODO(yjbanov): This is Engine-internal API. We should make it private.
-  bool get webOnlyDrawOnCanvas =>
-      _webOnlyIsSingleLine &&
-      _plainText != null &&
-      _paragraphGeometricStyle.ellipsis == null &&
-      _paragraphGeometricStyle.decoration == null &&
-      _paragraphGeometricStyle.letterSpacing == null &&
-      _paragraphGeometricStyle.wordSpacing == null &&
-      _background == null;
+  bool get webOnlyDrawOnCanvas {
+    bool canDrawTextOnCanvas;
+    if (engine.TextMeasurementService.enableExperimentalCanvasImplementation) {
+      canDrawTextOnCanvas = webOnlyLines != null;
+    } else {
+      canDrawTextOnCanvas = _webOnlyIsSingleLine &&
+          _plainText != null &&
+          _paragraphGeometricStyle.ellipsis == null &&
+          _paragraphGeometricStyle.letterSpacing == null;
+    }
+
+    return canDrawTextOnCanvas &&
+        _paragraphGeometricStyle.decoration == null &&
+        _paragraphGeometricStyle.wordSpacing == null &&
+        _background == null;
+  }
 
   /// Whether this paragraph has been laid out.
   // TODO(yjbanov): This is Engine-internal API. We should make it private.

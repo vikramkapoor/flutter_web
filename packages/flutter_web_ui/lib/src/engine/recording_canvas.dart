@@ -293,6 +293,9 @@ class RecordingCanvas {
     }
 
     _didDraw = true;
+    if (paragraph.webOnlyGetParagraphGeometricStyle().ellipsis != null) {
+      _hasArbitraryPaint = true;
+    }
     final double left = offset.dx;
     final double top = offset.dy;
     _paintBounds.growLTRB(

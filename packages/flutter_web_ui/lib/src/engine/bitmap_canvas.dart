@@ -765,6 +765,31 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
     );
   }
 
+  void _drawTextLine(
+      ParagraphGeometricStyle style, String line, double x, double y) {
+    final double letterSpacing = style.letterSpacing;
+    if (letterSpacing == null || letterSpacing == 0.0) {
+      ctx.fillText(line, x, y);
+    } else {
+      // When letter-spacing is set, we go through a more expensive code path
+      // that renders each character separately with the correct spacing
+      // between them.
+      //
+      // We are drawing letter spacing like the web does it, by adding the
+      // spacing after each letter. This is different from Flutter which puts
+      // the spacing around each letter i.e. for a 10px letter spacing, Flutter
+      // would put 5px before each letter and 5px after it, but on the web, we
+      // put no spacing before the letter and 10px after it. This is how the DOM
+      // does it.
+      final int len = line.length;
+      for (int i = 0; i < len; i++) {
+        final String char = line[i];
+        ctx.fillText(char, x, y);
+        x += letterSpacing + ctx.measureText(char).width;
+      }
+    }
+  }
+
   @override
   void drawParagraph(ui.Paragraph paragraph, ui.Offset offset) {
     assert(paragraph.webOnlyIsLaidOut);
@@ -773,15 +798,22 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
         paragraph.webOnlyGetParagraphGeometricStyle();
 
     if (paragraph.webOnlyDrawOnCanvas) {
+      final List<String> lines =
+          paragraph.webOnlyLines ?? <String>[paragraph.webOnlyGetPlainText()];
+
       if (style != _cachedLastStyle) {
         ctx.font = style.cssFontString;
         _cachedLastStyle = style;
       }
       _applyPaint(paragraph.webOnlyGetPaint().webOnlyPaintData);
-      ctx.fillText(
-          paragraph.webOnlyGetPlainText(),
-          offset.dx + paragraph.webOnlyAlignOffset,
-          offset.dy + paragraph.alphabeticBaseline);
+
+      final double x = offset.dx + paragraph.webOnlyAlignOffset;
+      double y = offset.dy + paragraph.alphabeticBaseline;
+      final int len = lines.length;
+      for (int i = 0; i < len; i++) {
+        _drawTextLine(style, lines[i], x, y);
+        y += paragraph.webOnlyLineHeight;
+      }
       _resetPaint();
       return;
     }

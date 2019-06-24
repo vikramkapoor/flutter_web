@@ -742,6 +742,12 @@ class MeasurementResult {
   /// [height] should be equal.
   final double naturalHeight;
 
+  /// The amount of vertical space each line of the paragraph occupies.
+  ///
+  /// In some cases, measuring [lineHeight] is unnecessary, so it's nullable. If
+  /// present, it should be equal to [height] when [isSingleLine] is true.
+  final double lineHeight;
+
   /// {@macro dart.ui.paragraph.minIntrinsicWidth}
   final double minIntrinsicWidth;
 
@@ -764,6 +770,7 @@ class MeasurementResult {
     @required this.width,
     @required this.height,
     @required this.naturalHeight,
+    @required this.lineHeight,
     @required this.minIntrinsicWidth,
     @required this.maxIntrinsicWidth,
     @required this.alphabeticBaseline,
