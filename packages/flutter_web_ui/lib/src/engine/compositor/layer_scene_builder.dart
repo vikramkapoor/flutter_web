@@ -4,12 +4,6 @@
 
 part of engine;
 
-class EngineLayerImpl extends ui.EngineLayer {
-  final ContainerLayer _layer;
-
-  EngineLayerImpl(this._layer);
-}
-
 class LayerScene implements ui.Scene {
   final LayerTree layerTree;
 
@@ -59,8 +53,7 @@ class LayerSceneBuilder implements ui.SceneBuilder {
     if (currentLayer == null) {
       return;
     }
-    final EngineLayerImpl engineLayer = retainedLayer;
-    currentLayer.add(engineLayer._layer);
+    currentLayer.add(retainedLayer);
   }
 
   @override
@@ -97,48 +90,50 @@ class LayerSceneBuilder implements ui.SceneBuilder {
   }
 
   @override
-  ui.EngineLayer pushBackdropFilter(ui.ImageFilter filter,
+  ui.BackdropFilterEngineLayer pushBackdropFilter(ui.ImageFilter filter,
       {ui.EngineLayer oldLayer}) {
     throw UnimplementedError();
   }
 
   @override
-  ui.EngineLayer pushClipPath(ui.Path path,
+  ui.ClipPathEngineLayer pushClipPath(ui.Path path,
       {ui.Clip clipBehavior = ui.Clip.antiAlias, ui.EngineLayer oldLayer}) {
     pushLayer(ClipPathLayer(path));
     return null;
   }
 
   @override
-  ui.EngineLayer pushClipRRect(ui.RRect rrect,
+  ui.ClipRRectEngineLayer pushClipRRect(ui.RRect rrect,
       {ui.Clip clipBehavior, ui.EngineLayer oldLayer}) {
     pushLayer(ClipRRectLayer(rrect));
     return null;
   }
 
   @override
-  ui.EngineLayer pushClipRect(ui.Rect rect,
+  ui.ClipRectEngineLayer pushClipRect(ui.Rect rect,
       {ui.Clip clipBehavior = ui.Clip.antiAlias, ui.EngineLayer oldLayer}) {
     pushLayer(ClipRectLayer(rect));
     return null;
   }
 
   @override
-  ui.EngineLayer pushColorFilter(ui.Color color, ui.BlendMode blendMode,
+  ui.ColorFilterEngineLayer pushColorFilter(
+      ui.Color color, ui.BlendMode blendMode,
       {ui.EngineLayer oldLayer}) {
     throw UnimplementedError();
   }
 
   @override
-  ui.EngineLayer pushOffset(double dx, double dy, {ui.EngineLayer oldLayer}) {
+  ui.OffsetEngineLayer pushOffset(double dx, double dy,
+      {ui.EngineLayer oldLayer}) {
     final Matrix4 matrix = Matrix4.translationValues(dx, dy, 0.0);
     final TransformLayer layer = TransformLayer(matrix);
     pushLayer(layer);
-    return EngineLayerImpl(layer);
+    return layer;
   }
 
   @override
-  ui.EngineLayer pushOpacity(int alpha,
+  ui.OpacityEngineLayer pushOpacity(int alpha,
       {ui.EngineLayer oldLayer, ui.Offset offset = ui.Offset.zero}) {
     // TODO(het): Implement opacity
     pushOffset(0.0, 0.0);
@@ -146,7 +141,7 @@ class LayerSceneBuilder implements ui.SceneBuilder {
   }
 
   @override
-  ui.EngineLayer pushPhysicalShape({
+  ui.PhysicalShapeEngineLayer pushPhysicalShape({
     ui.Path path,
     double elevation,
     ui.Color color,
@@ -157,18 +152,19 @@ class LayerSceneBuilder implements ui.SceneBuilder {
     final PhysicalShapeLayer layer =
         PhysicalShapeLayer(elevation, color, shadowColor, path, clipBehavior);
     pushLayer(layer);
-    return EngineLayerImpl(layer);
+    return layer;
   }
 
   @override
-  ui.EngineLayer pushShaderMask(
+  ui.ShaderMaskEngineLayer pushShaderMask(
       ui.Shader shader, ui.Rect maskRect, ui.BlendMode blendMode,
       {ui.EngineLayer oldLayer}) {
     throw UnimplementedError();
   }
 
   @override
-  ui.EngineLayer pushTransform(Float64List matrix4, {ui.EngineLayer oldLayer}) {
+  ui.TransformEngineLayer pushTransform(Float64List matrix4,
+      {ui.EngineLayer oldLayer}) {
     final Matrix4 matrix = Matrix4.fromList(matrix4);
     pushLayer(TransformLayer(matrix));
     return null;

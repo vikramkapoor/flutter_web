@@ -5,7 +5,8 @@
 part of engine;
 
 /// A surface that applies an image filter to background.
-class PersistedBackdropFilter extends PersistedContainerSurface {
+class PersistedBackdropFilter extends PersistedContainerSurface
+    implements ui.BackdropFilterEngineLayer {
   PersistedBackdropFilter(PersistedBackdropFilter oldLayer, this.filter)
       : super(oldLayer);
 
