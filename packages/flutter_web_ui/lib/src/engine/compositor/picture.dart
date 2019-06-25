@@ -21,7 +21,7 @@ class SkPicture implements ui.Picture {
   RecordingCanvas get recordingCanvas => null;
 
   @override
-  ui.Image toImage(int width, int height) {
+  Future<ui.Image> toImage(int width, int height) {
     // TODO: implement toImage
     return null;
   }
