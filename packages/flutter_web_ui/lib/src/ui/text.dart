@@ -1487,6 +1487,9 @@ class Paragraph {
   /// [ParagraphBuilder] for more details on what is considered "rich".
   Paint webOnlyGetPaint() => _paint;
 
+  /// The paint drawn as a background for the paragraph.
+  PaintData get webOnlyBackground => _background?._paintData;
+
   /// Whether or not this paragraph can be drawn on a single line.
   bool get _webOnlyIsSingleLine => _measurementResult.isSingleLine;
 
@@ -1508,14 +1511,12 @@ class Paragraph {
     } else {
       canDrawTextOnCanvas = _webOnlyIsSingleLine &&
           _plainText != null &&
-          _paragraphGeometricStyle.ellipsis == null &&
-          _paragraphGeometricStyle.letterSpacing == null;
+          _paragraphGeometricStyle.ellipsis == null;
     }
 
     return canDrawTextOnCanvas &&
         _paragraphGeometricStyle.decoration == null &&
-        _paragraphGeometricStyle.wordSpacing == null &&
-        _background == null;
+        _paragraphGeometricStyle.wordSpacing == null;
   }
 
   /// Whether this paragraph has been laid out.

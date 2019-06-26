@@ -801,6 +801,12 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
       final List<String> lines =
           paragraph.webOnlyLines ?? <String>[paragraph.webOnlyGetPlainText()];
 
+      if (paragraph.webOnlyBackground != null) {
+        final ui.Rect rect = ui.Rect.fromLTWH(
+            offset.dx, offset.dy, paragraph.width, paragraph.height);
+        drawRect(rect, paragraph.webOnlyBackground);
+      }
+
       if (style != _cachedLastStyle) {
         ctx.font = style.cssFontString;
         _cachedLastStyle = style;
