@@ -288,43 +288,6 @@ enum TextAlign {
   end,
 }
 
-/// Converts [align] to its corresponding CSS value.
-///
-/// This value is used as the "text-align" CSS property, e.g.:
-///
-/// ```css
-/// text-align: right;
-/// ```
-String textAlignToCssValue(TextAlign align, TextDirection textDirection) {
-  switch (align) {
-    case TextAlign.left:
-      return 'left';
-    case TextAlign.right:
-      return 'right';
-    case TextAlign.center:
-      return 'center';
-    case TextAlign.justify:
-      return 'justify';
-    case TextAlign.start:
-      switch (textDirection) {
-        case TextDirection.ltr:
-          return null; // it's the default
-        case TextDirection.rtl:
-          return 'right';
-      }
-      break;
-    case TextAlign.end:
-      switch (textDirection) {
-        case TextDirection.ltr:
-          return 'end';
-        case TextDirection.rtl:
-          return 'left';
-      }
-      break;
-  }
-  throw AssertionError('Unsupported TextAlign value $align');
-}
-
 /// A horizontal line used for aligning text.
 enum TextBaseline {
   /// The horizontal line used to align the bottom of glyphs for alphabetic characters.
@@ -418,28 +381,8 @@ enum TextDecorationStyle {
   wavy
 }
 
-/// Determines if lists [a] and [b] are deep equivalent.
-///
-/// Returns true if the lists are both null, or if they are both non-null, have
-/// the same length, and contain the same elements in the same order. Returns
-/// false otherwise.
-bool _listEquals<T>(List<T> a, List<T> b) {
-  if (a == null) {
-    return b == null;
-  }
-  if (b == null || a.length != b.length) {
-    return false;
-  }
-  for (int index = 0; index < a.length; index += 1) {
-    if (a[index] != b[index]) {
-      return false;
-    }
-  }
-  return true;
-}
-
 /// An opaque object that determines the size, position, and rendering of text.
-class TextStyle {
+abstract class TextStyle {
   /// Creates a new TextStyle object.
   ///
   /// * `color`: The color to use when painting the text. If this is specified, `foreground` must be null.
@@ -465,7 +408,7 @@ class TextStyle {
   /// * `locale`: The locale used to select region-specific glyphs.
   /// * `background`: The paint drawn as a background for the text.
   /// * `foreground`: The paint used to draw the text. If this is specified, `color` must be null.
-  TextStyle({
+  factory TextStyle({
     Color color,
     TextDecoration decoration,
     Color decorationColor,
@@ -484,146 +427,12 @@ class TextStyle {
     Paint background,
     Paint foreground,
     List<Shadow> shadows,
-  })  : assert(
-            color == null || foreground == null,
-            'Cannot provide both a color and a foreground\n'
-            'The color argument is just a shorthand for "foreground: new Paint()..color = color".'),
-        _color = color,
-        _decoration = decoration,
-        _decorationColor = decorationColor,
-        _decorationStyle = decorationStyle,
-        _fontWeight = fontWeight,
-        _fontStyle = fontStyle,
-        _textBaseline = textBaseline,
-        // TODO(b/128311960): when font fallback is supported, we should check
-        //                    for it here.
-        _webOnlyIsFontFamilyProvided = fontFamily != null,
-        _fontFamily = fontFamily ?? '',
-        // TODO(b/128311960): add support for font family fallback.
-        _fontFamilyFallback = fontFamilyFallback,
-        _fontSize = fontSize,
-        _letterSpacing = letterSpacing,
-        _wordSpacing = wordSpacing,
-        _height = height,
-        _locale = locale,
-        _background = background,
-        _foreground = foreground,
-        _shadows = shadows;
-
-  final Color _color;
-  final TextDecoration _decoration;
-  final Color _decorationColor;
-  final TextDecorationStyle _decorationStyle;
-  final FontWeight _fontWeight;
-  final FontStyle _fontStyle;
-  final TextBaseline _textBaseline;
-  final bool _webOnlyIsFontFamilyProvided;
-  final String _fontFamily;
-  final List<String> _fontFamilyFallback;
-  final double _fontSize;
-  final double _letterSpacing;
-  final double _wordSpacing;
-  final double _height;
-  final Locale _locale;
-  final Paint _background;
-  final Paint _foreground;
-  final List<Shadow> _shadows;
-
-  String get _effectiveFontFamily {
-    if (engine.assertionsEnabled) {
-      // In widget tests we use a predictable-size font "Ahem". This makes
-      // widget tests predictable and less flaky.
-      if (debugEmulateFlutterTesterEnvironment) {
-        return 'Ahem';
-      }
-    }
-    if (_fontFamily == null || _fontFamily.isEmpty) {
-      return engine.DomRenderer.defaultFontFamily;
-    }
-    return _fontFamily;
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other is! TextStyle) {
-      return false;
-    }
-    final TextStyle typedOther = other;
-    return _color == typedOther._color &&
-        _decoration == typedOther._decoration &&
-        _decorationColor == typedOther._decorationColor &&
-        _decorationStyle == typedOther._decorationStyle &&
-        _fontWeight == typedOther._fontWeight &&
-        _fontStyle == typedOther._fontStyle &&
-        _textBaseline == typedOther._textBaseline &&
-        _fontFamily == typedOther._fontFamily &&
-        _fontSize == typedOther._fontSize &&
-        _letterSpacing == typedOther._letterSpacing &&
-        _wordSpacing == typedOther._wordSpacing &&
-        _height == typedOther._height &&
-        _locale == typedOther._locale &&
-        _background == typedOther._background &&
-        _foreground == typedOther._foreground &&
-        _listEquals<Shadow>(_shadows, typedOther._shadows) &&
-        _listEquals<String>(
-            _fontFamilyFallback, typedOther._fontFamilyFallback);
-  }
-
-  @override
-  int get hashCode => hashValues(
-        _color,
-        _decoration,
-        _decorationColor,
-        _decorationStyle,
-        _fontWeight,
-        _fontStyle,
-        _textBaseline,
-        _fontFamily,
-        _fontFamilyFallback,
-        _fontSize,
-        _letterSpacing,
-        _wordSpacing,
-        _height,
-        _locale,
-        _background,
-        _foreground,
-        _shadows,
-      );
-
-  @override
-  String toString() {
-    if (engine.assertionsEnabled) {
-      return 'TextStyle('
-          'color: ${_color != null ? _color : "unspecified"}, '
-          'decoration: ${_decoration ?? "unspecified"}, '
-          'decorationColor: ${_decorationColor ?? "unspecified"}, '
-          'decorationStyle: ${_decorationStyle ?? "unspecified"}, '
-          'fontWeight: ${_fontWeight ?? "unspecified"}, '
-          'fontStyle: ${_fontStyle ?? "unspecified"}, '
-          'textBaseline: ${_textBaseline ?? "unspecified"}, '
-          'fontFamily: ${_webOnlyIsFontFamilyProvided && _fontFamily != null ? _fontFamily : "unspecified"}, '
-          'fontFamilyFallback: ${_webOnlyIsFontFamilyProvided && _fontFamilyFallback != null && _fontFamilyFallback.isNotEmpty ? _fontFamilyFallback : "unspecified"}, '
-          'fontSize: ${_fontSize != null ? _fontSize.toStringAsFixed(1) : "unspecified"}, '
-          'letterSpacing: ${_letterSpacing != null ? "${_letterSpacing}x" : "unspecified"}, '
-          'wordSpacing: ${_wordSpacing != null ? "${_wordSpacing}x" : "unspecified"}, '
-          'height: ${_height != null ? "${_height.toStringAsFixed(1)}x" : "unspecified"}, '
-          'locale: ${_locale ?? "unspecified"}, '
-          'background: ${_background ?? "unspecified"}, '
-          'foreground: ${_foreground ?? "unspecified"}, '
-          'shadows: ${_shadows ?? "unspecified"}'
-          ')';
-    } else {
-      return super.toString();
-    }
-  }
+  }) = engine.EngineTextStyle;
 }
 
 /// An opaque object that determines the configuration used by
 /// [ParagraphBuilder] to position lines within a [Paragraph] of text.
-class ParagraphStyle {
+abstract class ParagraphStyle {
   /// Creates a new ParagraphStyle object.
   ///
   /// * `textAlign`: The alignment of the text within the lines of the
@@ -678,7 +487,7 @@ class ParagraphStyle {
   ///   considered equivalent and turn off this behavior.
   ///
   /// * `locale`: The locale used to select region-specific glyphs.
-  ParagraphStyle({
+  factory ParagraphStyle({
     TextAlign textAlign,
     TextDirection textDirection,
     int maxLines,
@@ -690,106 +499,10 @@ class ParagraphStyle {
     StrutStyle strutStyle,
     String ellipsis,
     Locale locale,
-  })  : _textAlign = textAlign,
-        _textDirection = textDirection,
-        _fontWeight = fontWeight,
-        _fontStyle = fontStyle,
-        _maxLines = maxLines,
-        _fontFamily = fontFamily,
-        _fontSize = fontSize,
-        _height = height,
-        // TODO(b/128317744): add support for strut style.
-        _strutStyle = strutStyle,
-        _ellipsis = ellipsis,
-        _locale = locale;
-
-  final TextAlign _textAlign;
-  final TextDirection _textDirection;
-  final FontWeight _fontWeight;
-  final FontStyle _fontStyle;
-  final int _maxLines;
-  final String _fontFamily;
-  final double _fontSize;
-  final double _height;
-  final StrutStyle _strutStyle;
-  final String _ellipsis;
-  final Locale _locale;
-
-  String get _effectiveFontFamily {
-    if (engine.assertionsEnabled) {
-      // In widget tests we use a predictable-size font "Ahem". This makes
-      // widget tests predictable and less flaky.
-      if (debugEmulateFlutterTesterEnvironment) {
-        return 'Ahem';
-      }
-    }
-    if (_fontFamily == null || _fontFamily.isEmpty) {
-      return engine.DomRenderer.defaultFontFamily;
-    }
-    return _fontFamily;
-  }
-
-  double get _webOnlyLineHeight {
-    if (_strutStyle == null || _strutStyle._height == null) {
-      // When there's no strut height, always use paragraph style height.
-      return _height;
-    }
-    if (_strutStyle._forceStrutHeight == true) {
-      // When strut height is forced, ignore paragraph style height.
-      return _strutStyle._height;
-    }
-    // In this case, strut height acts as a minimum height for all parts of the
-    // paragraph. So we take the max of strut height and paragraph style height.
-    return math.max(_strutStyle._height, _height ?? 0.0);
-  }
-
-  @override
-  bool operator ==(dynamic other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other.runtimeType != runtimeType) {
-      return false;
-    }
-    final ParagraphStyle typedOther = other;
-    return _textAlign == typedOther._textAlign ||
-        _textDirection == typedOther._textDirection ||
-        _fontWeight == typedOther._fontWeight ||
-        _fontStyle == typedOther._fontStyle ||
-        _maxLines == typedOther._maxLines ||
-        _fontFamily == typedOther._fontFamily ||
-        _fontSize == typedOther._fontSize ||
-        _height == typedOther._height ||
-        _ellipsis == typedOther._ellipsis ||
-        _locale == typedOther._locale;
-  }
-
-  @override
-  int get hashCode =>
-      hashValues(_fontFamily, _fontSize, _height, _ellipsis, _locale);
-
-  @override
-  String toString() {
-    if (engine.assertionsEnabled) {
-      return '$runtimeType('
-          'textAlign: ${_textAlign ?? "unspecified"}, '
-          'textDirection: ${_textDirection ?? "unspecified"}, '
-          'fontWeight: ${_fontWeight ?? "unspecified"}, '
-          'fontStyle: ${_fontStyle ?? "unspecified"}, '
-          'maxLines: ${_maxLines ?? "unspecified"}, '
-          'fontFamily: ${_fontFamily ?? "unspecified"}, '
-          'fontSize: ${_fontSize != null ? _fontSize.toStringAsFixed(1) : "unspecified"}, '
-          'height: ${_height != null ? "${_height.toStringAsFixed(1)}x" : "unspecified"}, '
-          'ellipsis: ${_ellipsis != null ? "\"$_ellipsis\"" : "unspecified"}, '
-          'locale: ${_locale ?? "unspecified"}'
-          ')';
-    } else {
-      return super.toString();
-    }
-  }
+  }) = engine.EngineParagraphStyle;
 }
 
-class StrutStyle {
+abstract class StrutStyle {
   /// Creates a new StrutStyle object.
   ///
   /// * `fontFamily`: The name of the font to use when painting the text (e.g.,
@@ -825,7 +538,7 @@ class StrutStyle {
   ///   total ascent of the first line will be the min of the `Ascent + half-leading`
   ///   of the [fontFamily] and `(lineHeight + leading) * fontSize`. Otherwise, it
   ///   will be determined by the Ascent + half-leading of the first text.
-  StrutStyle({
+  factory StrutStyle({
     String fontFamily,
     List<String> fontFamilyFallback,
     double fontSize,
@@ -834,47 +547,7 @@ class StrutStyle {
     FontWeight fontWeight,
     FontStyle fontStyle,
     bool forceStrutHeight,
-  })  : _fontFamily = fontFamily,
-        _fontFamilyFallback = fontFamilyFallback,
-        _fontSize = fontSize,
-        _height = height,
-        _leading = leading,
-        _fontWeight = fontWeight,
-        _fontStyle = fontStyle,
-        _forceStrutHeight = forceStrutHeight;
-
-  final String _fontFamily;
-  final List<String> _fontFamilyFallback;
-  final double _fontSize;
-  final double _height;
-  final double _leading;
-  final FontWeight _fontWeight;
-  final FontStyle _fontStyle;
-  final bool _forceStrutHeight;
-
-  @override
-  bool operator ==(dynamic other) {
-    if (identical(this, other)) {
-      return true;
-    }
-    if (other.runtimeType != runtimeType) {
-      return false;
-    }
-    final StrutStyle typedOther = other;
-    return _fontFamily == typedOther._fontFamily &&
-        _fontSize == typedOther._fontSize &&
-        _height == typedOther._height &&
-        _leading == typedOther._leading &&
-        _fontWeight == typedOther._fontWeight &&
-        _fontStyle == typedOther._fontStyle &&
-        _forceStrutHeight == typedOther._forceStrutHeight &&
-        _listEquals<String>(
-            _fontFamilyFallback, typedOther._fontFamilyFallback);
-  }
-
-  @override
-  int get hashCode => hashValues(_fontFamily, _fontFamilyFallback, _fontSize,
-      _height, _leading, _fontWeight, _fontStyle, _forceStrutHeight);
+  }) = engine.EngineStrutStyle;
 }
 
 /// A direction in which text flows.
@@ -968,19 +641,6 @@ enum TextDirection {
 
   /// The text flows from left to right (e.g., English, French).
   ltr,
-}
-
-/// Converts [textDirection] to its corresponding CSS value.
-///
-/// This value is used for the "direction" CSS property, e.g.:
-///
-/// ```css
-/// direction: rtl;
-/// ```
-String textDirectionToCssValue(TextDirection textDirection) {
-  return textDirection == TextDirection.ltr
-      ? null // it's the default
-      : 'rtl';
 }
 
 /// A rectangle enclosing a run of text.
@@ -1405,42 +1065,16 @@ abstract class Paragraph {
 ///
 /// After constructing a [Paragraph], call [Paragraph.layout] on it and then
 /// paint it with [Canvas.drawParagraph].
-class ParagraphBuilder {
-  /// Marks a call to the [pop] method in the [_ops] list.
-  static final Object _paragraphBuilderPop = Object();
-
-  final html.HtmlElement _paragraphElement =
-      engine.domRenderer.createElement('p');
-  final ParagraphStyle _paragraphStyle;
-  final List<dynamic> _ops = <dynamic>[];
-
+abstract class ParagraphBuilder {
   /// Creates a [ParagraphBuilder] object, which is used to create a
   /// [Paragraph].
-  ParagraphBuilder(ParagraphStyle style) : _paragraphStyle = style {
-    // TODO(b/128317744): Implement support for strut font families.
-    List<String> strutFontFamilies;
-    if (style._strutStyle != null) {
-      strutFontFamilies = <String>[];
-      if (style._strutStyle._fontFamily != null) {
-        strutFontFamilies.add(style._strutStyle._fontFamily);
-      }
-      if (style._strutStyle._fontFamilyFallback != null) {
-        strutFontFamilies.addAll(style._strutStyle._fontFamilyFallback);
-      }
-    }
-    _applyParagraphStyleToElement(
-        element: _paragraphElement, style: _paragraphStyle);
-  }
+  factory ParagraphBuilder(ParagraphStyle style) =>
+      engine.EngineParagraphBuilder(style);
 
   /// Applies the given style to the added text until [pop] is called.
   ///
   /// See [pop] for details.
-  void pushStyle(TextStyle style) {
-    _ops.add(style);
-  }
-
-  // TODO(yjbanov): do we need to do this?
-//  static String _encodeLocale(Locale locale) => locale?.toString() ?? '';
+  void pushStyle(TextStyle style);
 
   /// Ends the effect of the most recent call to [pushStyle].
   ///
@@ -1448,483 +1082,19 @@ class ParagraphBuilder {
   /// added to the paragraph is affected by all the styles in the stack. Calling
   /// [pop] removes the topmost style in the stack, leaving the remaining styles
   /// in effect.
-  void pop() {
-    _ops.add(_paragraphBuilderPop);
-  }
+  void pop();
 
   /// Adds the given text to the paragraph.
   ///
   /// The text will be styled according to the current stack of text styles.
-  void addText(String text) {
-    _ops.add(text);
-  }
+  void addText(String text);
 
   /// Applies the given paragraph style and returns a [Paragraph] containing the
   /// added text and associated styling.
   ///
   /// After calling this function, the paragraph builder object is invalid and
   /// cannot be used further.
-  Paragraph build() {
-    return _tryBuildPlainText() ?? _buildRichText();
-  }
-
-  /// Attempts to build a [Paragraph] assuming it is plain text.
-  ///
-  /// A paragraph is considered plain if it is built using the following
-  /// sequence of ops:
-  ///
-  /// * Zero-or-more calls to [pushStyle].
-  /// * One-or-more calls to [addText].
-  /// * Zero-or-more calls to [pop].
-  ///
-  /// Any other sequence will result in `null` and should be treated as rich
-  /// text.
-  ///
-  /// Plain text is not the same as not having style. The text may be styled
-  /// arbitrarily. However, it may not mix multiple styles in the same
-  /// paragraph. Plain text is more efficient to lay out and measure than rich
-  /// text.
-  Paragraph _tryBuildPlainText() {
-    Color color;
-    TextDecoration decoration;
-    Color decorationColor;
-    TextDecorationStyle decorationStyle;
-    FontWeight fontWeight = _paragraphStyle._fontWeight;
-    FontStyle fontStyle = _paragraphStyle._fontStyle;
-    TextBaseline textBaseline;
-    String fontFamily = _paragraphStyle._fontFamily;
-    double fontSize = _paragraphStyle._fontSize;
-    final TextAlign textAlign = _paragraphStyle._textAlign;
-    final TextDirection textDirection = _paragraphStyle._textDirection;
-    double letterSpacing;
-    double wordSpacing;
-    double height;
-    Locale locale = _paragraphStyle._locale;
-    Paint background;
-    Paint foreground;
-
-    int i = 0;
-
-    // This loop looks expensive. However, in reality most of plain text
-    // paragraphs will have no calls to [pushStyle], skipping this loop
-    // entirely. Occasionally there will be one [pushStyle], which causes this
-    // loop to run once then move on to aggregating text.
-    while (i < _ops.length && _ops[i] is TextStyle) {
-      final TextStyle style = _ops[i];
-      if (style._color != null) {
-        color = style._color;
-      }
-      if (style._decoration != null) {
-        decoration = style._decoration;
-      }
-      if (style._decorationColor != null) {
-        decorationColor = style._decorationColor;
-      }
-      if (style._decorationStyle != null) {
-        decorationStyle = style._decorationStyle;
-      }
-      if (style._fontWeight != null) {
-        fontWeight = style._fontWeight;
-      }
-      if (style._fontStyle != null) {
-        fontStyle = style._fontStyle;
-      }
-      if (style._textBaseline != null) {
-        textBaseline = style._textBaseline;
-      }
-      if (style._fontFamily != null) {
-        fontFamily = style._fontFamily;
-      }
-      if (style._fontSize != null) {
-        fontSize = style._fontSize;
-      }
-      if (style._letterSpacing != null) {
-        letterSpacing = style._letterSpacing;
-      }
-      if (style._wordSpacing != null) {
-        wordSpacing = style._wordSpacing;
-      }
-      if (style._height != null) {
-        height = style._height;
-      }
-      if (style._locale != null) {
-        locale = style._locale;
-      }
-      if (style._background != null) {
-        background = style._background;
-      }
-      if (style._foreground != null) {
-        foreground = style._foreground;
-      }
-      i++;
-    }
-
-    final TextStyle cumulativeStyle = TextStyle(
-      color: color,
-      decoration: decoration,
-      decorationColor: decorationColor,
-      decorationStyle: decorationStyle,
-      fontWeight: fontWeight,
-      fontStyle: fontStyle,
-      textBaseline: textBaseline,
-      fontFamily: fontFamily,
-      fontSize: fontSize,
-      letterSpacing: letterSpacing,
-      wordSpacing: wordSpacing,
-      height: height,
-      locale: locale,
-      background: background,
-      foreground: foreground,
-    );
-
-    Paint paint;
-    if (foreground != null) {
-      paint = foreground;
-    } else {
-      paint = Paint();
-      if (color != null) {
-        paint.color = color;
-      }
-    }
-
-    if (i >= _ops.length) {
-      // Empty paragraph.
-      _applyTextStyleToElement(
-          element: _paragraphElement, style: cumulativeStyle);
-      return engine.EngineParagraph(
-        paragraphElement: _paragraphElement,
-        geometricStyle: engine.ParagraphGeometricStyle(
-          fontFamily: fontFamily,
-          fontWeight: fontWeight,
-          fontStyle: fontStyle,
-          fontSize: fontSize,
-          lineHeight: height,
-          maxLines: _paragraphStyle._maxLines,
-          letterSpacing: letterSpacing,
-          wordSpacing: wordSpacing,
-          decoration: _textDecorationToCssString(decoration, decorationStyle),
-          ellipsis: _paragraphStyle._ellipsis,
-        ),
-        plainText: '',
-        paint: paint,
-        textAlign: textAlign,
-        textDirection: textDirection,
-        background: cumulativeStyle._background,
-      );
-    }
-
-    if (_ops[i] is! String) {
-      // After a series of TextStyle ops there must be at least one text op.
-      // Otherwise, treat it as rich text.
-      return null;
-    }
-
-    // Accumulate text into one contiguous string.
-    final StringBuffer plainTextBuffer = StringBuffer();
-    while (i < _ops.length && _ops[i] is String) {
-      plainTextBuffer.write(_ops[i]);
-      i++;
-    }
-
-    // After a series of [addText] ops there should only be a tail of [pop]s and
-    // nothing else. Otherwise it's rich text and we return null;
-    for (; i < _ops.length; i++) {
-      if (_ops[i] != _paragraphBuilderPop) {
-        return null;
-      }
-    }
-
-    final String plainText = plainTextBuffer.toString();
-    engine.domRenderer.appendText(_paragraphElement, plainText);
-    _applyTextStyleToElement(
-        element: _paragraphElement, style: cumulativeStyle);
-    // Since this is a plain paragraph apply background color to paragraph tag
-    // instead of individual spans.
-    if (cumulativeStyle._background != null) {
-      applyTextBackgroundToElement(
-          element: _paragraphElement, style: cumulativeStyle);
-    }
-    return engine.EngineParagraph(
-      paragraphElement: _paragraphElement,
-      geometricStyle: engine.ParagraphGeometricStyle(
-        fontFamily: fontFamily,
-        fontWeight: fontWeight,
-        fontStyle: fontStyle,
-        fontSize: fontSize,
-        lineHeight: height,
-        maxLines: _paragraphStyle._maxLines,
-        letterSpacing: letterSpacing,
-        wordSpacing: wordSpacing,
-        decoration: _textDecorationToCssString(decoration, decorationStyle),
-        ellipsis: _paragraphStyle._ellipsis,
-      ),
-      plainText: plainText,
-      paint: paint,
-      textAlign: textAlign,
-      textDirection: textDirection,
-      background: cumulativeStyle._background,
-    );
-  }
-
-  /// Builds a [Paragraph] as rich text.
-  Paragraph _buildRichText() {
-    final List<dynamic> elementStack = <dynamic>[];
-    dynamic currentElement() =>
-        elementStack.isNotEmpty ? elementStack.last : _paragraphElement;
-    for (int i = 0; i < _ops.length; i++) {
-      final dynamic op = _ops[i];
-      if (op is TextStyle) {
-        final html.SpanElement span = engine.domRenderer.createElement('span');
-        _applyTextStyleToElement(element: span, style: op);
-        if (op._background != null) {
-          applyTextBackgroundToElement(element: span, style: op);
-        }
-        engine.domRenderer.append(currentElement(), span);
-        elementStack.add(span);
-      } else if (op is String) {
-        engine.domRenderer.appendText(currentElement(), op);
-      } else if (identical(op, _paragraphBuilderPop)) {
-        elementStack.removeLast();
-      } else {
-        throw UnsupportedError('Unsupported ParagraphBuilder operation: $op');
-      }
-    }
-
-    return engine.EngineParagraph(
-      paragraphElement: _paragraphElement,
-      geometricStyle: engine.ParagraphGeometricStyle(
-        fontFamily: _paragraphStyle._fontFamily,
-        fontWeight: _paragraphStyle._fontWeight,
-        fontStyle: _paragraphStyle._fontStyle,
-        fontSize: _paragraphStyle._fontSize,
-        lineHeight: _paragraphStyle._height,
-        maxLines: _paragraphStyle._maxLines,
-        ellipsis: _paragraphStyle._ellipsis,
-      ),
-      plainText: null,
-      paint: null,
-      textAlign: _paragraphStyle._textAlign,
-      textDirection: _paragraphStyle._textDirection,
-      background: null,
-    );
-  }
-}
-
-/// Applies background color properties in text style to paragraph or span
-/// elements.
-void applyTextBackgroundToElement({
-  @required html.HtmlElement element,
-  @required TextStyle style,
-  TextStyle previousStyle,
-}) {
-  final Paint newBackground = style._background;
-  if (previousStyle == null) {
-    if (newBackground != null) {
-      engine.domRenderer.setElementStyle(
-          element, 'background-color', newBackground.color.toCssString());
-    }
-  } else {
-    if (newBackground != previousStyle._background) {
-      engine.domRenderer.setElementStyle(
-          element, 'background-color', newBackground.color?.toCssString());
-    }
-  }
-}
-
-/// Applies a text [style] to an [element], translating the properties to their
-/// corresponding CSS equivalents.
-///
-/// If [previousStyle] is not null, updates only the mismatching attributes.
-void _applyTextStyleToElement({
-  @required html.HtmlElement element,
-  @required TextStyle style,
-  TextStyle previousStyle,
-}) {
-  assert(element != null);
-  assert(style != null);
-  bool updateDecoration = false;
-  final html.CssStyleDeclaration cssStyle = element.style;
-  if (previousStyle == null) {
-    final Color color = style._foreground?.color ?? style._color;
-    if (color != null) {
-      cssStyle.color = color.toCssString();
-    }
-    if (style._fontSize != null) {
-      cssStyle.fontSize = '${style._fontSize.floor()}px';
-    }
-    if (style._fontWeight != null) {
-      cssStyle.fontWeight = engine.fontWeightToCss(style._fontWeight);
-    }
-    if (style._fontStyle != null) {
-      cssStyle.fontStyle =
-          style._fontStyle == FontStyle.normal ? 'normal' : 'italic';
-    }
-    if (style._effectiveFontFamily != null) {
-      cssStyle.fontFamily = style._effectiveFontFamily;
-    }
-    if (style._letterSpacing != null) {
-      cssStyle.letterSpacing = '${style._letterSpacing}px';
-    }
-    if (style._wordSpacing != null) {
-      cssStyle.wordSpacing = '${style._wordSpacing}px';
-    }
-    if (style._decoration != null) {
-      updateDecoration = true;
-    }
-  } else {
-    if (style._color != previousStyle._color ||
-        style._foreground != previousStyle._foreground) {
-      final Color color = style._foreground?.color ?? style._color;
-      cssStyle.color = color?.toCssString();
-    }
-
-    if (style._fontSize != previousStyle._fontSize) {
-      cssStyle.fontSize =
-          style._fontSize != null ? '${style._fontSize.floor()}px' : null;
-    }
-
-    if (style._fontWeight != previousStyle._fontWeight) {
-      cssStyle.fontWeight = engine.fontWeightToCss(style._fontWeight);
-    }
-
-    if (style._fontStyle != previousStyle._fontStyle) {
-      cssStyle.fontStyle = style._fontStyle != null
-          ? style._fontStyle == FontStyle.normal ? 'normal' : 'italic'
-          : null;
-    }
-    if (style._fontFamily != previousStyle._fontFamily) {
-      cssStyle.fontFamily = style._fontFamily;
-    }
-    if (style._letterSpacing != previousStyle._letterSpacing) {
-      cssStyle.letterSpacing = '${style._letterSpacing}px';
-    }
-    if (style._wordSpacing != previousStyle._wordSpacing) {
-      cssStyle.wordSpacing = '${style._wordSpacing}px';
-    }
-    if (style._decoration != previousStyle._decoration ||
-        style._decorationStyle != previousStyle._decorationStyle ||
-        style._decorationColor != previousStyle._decorationColor) {
-      updateDecoration = true;
-    }
-  }
-
-  if (updateDecoration) {
-    if (style._decoration != null) {
-      final String textDecoration =
-          _textDecorationToCssString(style._decoration, style._decorationStyle);
-      if (textDecoration != null) {
-        cssStyle.textDecoration = textDecoration;
-        final Color decorationColor = style._decorationColor;
-        if (decorationColor != null) {
-          cssStyle.textDecorationColor = decorationColor.toCssString();
-        }
-      }
-    }
-  }
-}
-
-/// Converts text decoration style to CSS text-decoration-style value.
-String _textDecorationToCssString(
-    TextDecoration decoration, TextDecorationStyle decorationStyle) {
-  final StringBuffer decorations = StringBuffer();
-  if (decoration != null) {
-    if (decoration.contains(TextDecoration.underline)) {
-      decorations.write('underline ');
-    }
-    if (decoration.contains(TextDecoration.overline)) {
-      decorations.write('overline ');
-    }
-    if (decoration.contains(TextDecoration.lineThrough)) {
-      decorations.write('line-through ');
-    }
-  }
-  if (decorationStyle != null) {
-    decorations.write(_decorationStyleToCssString(decorationStyle));
-  }
-  return decorations.isEmpty ? null : decorations.toString();
-}
-
-String _decorationStyleToCssString(TextDecorationStyle decorationStyle) {
-  switch (decorationStyle) {
-    case TextDecorationStyle.dashed:
-      return 'dashed';
-    case TextDecorationStyle.dotted:
-      return 'dotted';
-    case TextDecorationStyle.double:
-      return 'double';
-    case TextDecorationStyle.solid:
-      return 'solid';
-    case TextDecorationStyle.wavy:
-      return 'wavy';
-    default:
-      return null;
-  }
-}
-
-/// Applies a paragraph [style] to an [element], translating the properties to
-/// their corresponding CSS equivalents.
-///
-/// If [previousStyle] is not null, updates only the mismatching attributes.
-void _applyParagraphStyleToElement({
-  @required html.HtmlElement element,
-  @required ParagraphStyle style,
-  ParagraphStyle previousStyle,
-}) {
-  assert(element != null);
-  assert(style != null);
-  // TODO(yjbanov): What do we do about ParagraphStyle._locale and ellipsis?
-  final html.CssStyleDeclaration cssStyle = element.style;
-  if (previousStyle == null) {
-    if (style._textAlign != null) {
-      cssStyle.textAlign = textAlignToCssValue(
-          style._textAlign, style._textDirection ?? TextDirection.ltr);
-    }
-    if (style._webOnlyLineHeight != null) {
-      cssStyle.lineHeight = '${style._webOnlyLineHeight}';
-    }
-    if (style._textDirection != null) {
-      cssStyle.direction = textDirectionToCssValue(style._textDirection);
-    }
-    if (style._fontSize != null) {
-      cssStyle.fontSize = '${style._fontSize.floor()}px';
-    }
-    if (style._fontWeight != null) {
-      cssStyle.fontWeight = engine.fontWeightToCss(style._fontWeight);
-    }
-    if (style._fontStyle != null) {
-      cssStyle.fontStyle =
-          style._fontStyle == FontStyle.normal ? 'normal' : 'italic';
-    }
-    if (style._effectiveFontFamily != null) {
-      cssStyle.fontFamily = style._effectiveFontFamily;
-    }
-  } else {
-    if (style._textAlign != previousStyle._textAlign) {
-      cssStyle.textAlign = textAlignToCssValue(
-          style._textAlign, style._textDirection ?? TextDirection.ltr);
-    }
-    if (style._webOnlyLineHeight != style._webOnlyLineHeight) {
-      cssStyle.lineHeight = '${style._webOnlyLineHeight}';
-    }
-    if (style._textDirection != previousStyle._textDirection) {
-      cssStyle.direction = textDirectionToCssValue(style._textDirection);
-    }
-    if (style._fontSize != previousStyle._fontSize) {
-      cssStyle.fontSize =
-          style._fontSize != null ? '${style._fontSize.floor()}px' : null;
-    }
-    if (style._fontWeight != previousStyle._fontWeight) {
-      cssStyle.fontWeight = engine.fontWeightToCss(style._fontWeight);
-    }
-    if (style._fontStyle != previousStyle._fontStyle) {
-      cssStyle.fontStyle = style._fontStyle != null
-          ? (style._fontStyle == FontStyle.normal ? 'normal' : 'italic')
-          : null;
-    }
-    if (style._fontFamily != previousStyle._fontFamily) {
-      cssStyle.fontFamily = style._fontFamily;
-    }
-  }
+  Paragraph build();
 }
 
 /// Loads a font from a buffer and makes it available for rendering text.
