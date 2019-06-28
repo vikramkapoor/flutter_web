@@ -48,8 +48,8 @@ void main() {
     final ui.ParagraphStyle s3 = ui.ParagraphStyle(fontSize: 22.0);
 
     ParagraphGeometricStyle style1, style2, style3;
-    ui.Paragraph style1Text1, style1Text2; // two paragraphs sharing style
-    ui.Paragraph style2Text1, style3Text3;
+    EngineParagraph style1Text1, style1Text2; // two paragraphs sharing style
+    EngineParagraph style2Text1, style3Text3;
 
     setUp(() {
       style1Text1 = build(s1, '1');
@@ -57,12 +57,11 @@ void main() {
       style2Text1 = build(s2, '1');
       style3Text3 = build(s3, '3');
 
-      style1 = style1Text1.webOnlyGetParagraphGeometricStyle();
-      style2 = style2Text1.webOnlyGetParagraphGeometricStyle();
-      style3 = style3Text3.webOnlyGetParagraphGeometricStyle();
+      style1 = style1Text1.geometricStyle;
+      style2 = style2Text1.geometricStyle;
+      style3 = style3Text3.geometricStyle;
 
-      final ParagraphGeometricStyle style1_2 =
-          style1Text2.webOnlyGetParagraphGeometricStyle();
+      final ParagraphGeometricStyle style1_2 = style1Text2.geometricStyle;
       expect(style1_2, style1); // styles must be equal despite different text
     });
 

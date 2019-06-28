@@ -1300,81 +1300,22 @@ enum BoxWidthStyle {
 ///
 /// Paragraphs can be displayed on a [Canvas] using the [Canvas.drawParagraph]
 /// method.
-class Paragraph {
-  /// This class is created by the engine, and should not be instantiated
-  /// or extended directly.
-  ///
-  /// To create a [Paragraph] object, use a [ParagraphBuilder].
-  Paragraph._({
-    @required html.HtmlElement paragraphElement,
-    @required engine.ParagraphGeometricStyle paragraphGeometricStyle,
-    @required String plainText,
-    @required Paint paint,
-    @required TextAlign textAlign,
-    @required TextDirection textDirection,
-    @required Paint background,
-  })  : assert((plainText == null && paint == null) ||
-            (plainText != null && paint != null)),
-        _paragraphElement = paragraphElement,
-        _paragraphGeometricStyle = paragraphGeometricStyle,
-        _plainText = plainText,
-        _textAlign = textAlign,
-        _textDirection = textDirection,
-        _paint = paint,
-        _background = background;
-
-  final html.HtmlElement _paragraphElement;
-  final engine.ParagraphGeometricStyle _paragraphGeometricStyle;
-  final String _plainText;
-  final Paint _paint;
-  final TextAlign _textAlign;
-  final TextDirection _textDirection;
-  final Paint _background;
-
-  /// Do not use this method other than for painting on the [ParagraphSurface].
-  /// Instead use [ParagraphSurface] itself.
-  ///
-  /// It is likely that we will switch over to [Canvas] soon, and so this method
-  /// of painting should be considered deprecated.
-  html.HtmlElement webOnlyGetParagraphElement() => _paragraphElement;
-
-  /// The instance of [TextMeasurementService] to be used to measure this
-  /// paragraph.
-  engine.TextMeasurementService get _measurementService =>
-      engine.TextMeasurementService.forParagraph(this);
-
-  /// The measurement result of the last layout operation.
-  engine.MeasurementResult _measurementResult;
-
+abstract class Paragraph {
   /// The amount of horizontal space this paragraph occupies.
   ///
   /// Valid only after [layout] has been called.
-  double get width => _measurementResult?.width ?? -1;
+  double get width;
 
   /// The amount of vertical space this paragraph occupies.
   ///
   /// Valid only after [layout] has been called.
-  double get height => _measurementResult?.height ?? 0;
-
-  /// {@template dart.ui.paragraph.naturalHeight}
-  /// The amount of vertical space the paragraph occupies while ignoring the
-  /// [ParagraphGeometricStyle.maxLines] constraint.
-  /// {@endtemplate}
-  ///
-  /// Valid only after [layout] has been called.
-  double get _naturalHeight => _measurementResult?.naturalHeight ?? 0;
-
-  /// The amount of vertical space one line of this paragraph occupies.
-  ///
-  /// Valid only after [layout] has been called.
-  double get webOnlyLineHeight => _measurementResult?.lineHeight ?? 0;
+  double get height;
 
   /// The distance from the left edge of the leftmost glyph to the right edge of
   /// the rightmost glyph in the paragraph.
   ///
   /// Valid only after [layout] has been called.
-  // TODO(flutter_web): see https://github.com/flutter/flutter/issues/33613.
-  double get longestLine => 0;
+  double get longestLine;
 
   /// {@template dart.ui.paragraph.minIntrinsicWidth}
   /// The minimum width that this paragraph could be without failing to paint
@@ -1382,7 +1323,7 @@ class Paragraph {
   /// {@endtemplate}
   ///
   /// Valid only after [layout] has been called.
-  double get minIntrinsicWidth => _measurementResult?.minIntrinsicWidth ?? 0;
+  double get minIntrinsicWidth;
 
   /// {@template dart.ui.paragraph.maxIntrinsicWidth}
   /// Returns the smallest width beyond which increasing the width never
@@ -1390,7 +1331,7 @@ class Paragraph {
   /// {@endtemplate}
   ///
   /// Valid only after [layout] has been called.
-  double get maxIntrinsicWidth => _measurementResult?.maxIntrinsicWidth ?? 0;
+  double get maxIntrinsicWidth;
 
   /// {@template dart.ui.paragraph.alphabeticBaseline}
   /// The distance from the top of the paragraph to the alphabetic
@@ -1398,7 +1339,7 @@ class Paragraph {
   /// {@endtemplate}
   ///
   /// Valid only after [layout] has been called.
-  double get alphabeticBaseline => _measurementResult?.alphabeticBaseline ?? -1;
+  double get alphabeticBaseline;
 
   /// {@template dart.ui.paragraph.ideographicBaseline}
   /// The distance from the top of the paragraph to the ideographic
@@ -1406,8 +1347,7 @@ class Paragraph {
   /// {@endtemplate}
   ///
   /// Valid only after [layout] has been called.
-  double get ideographicBaseline =>
-      _measurementResult?.ideographicBaseline ?? -1;
+  double get ideographicBaseline;
 
   /// True if there is more vertical content, but the text was truncated, either
   /// because we reached `maxLines` lines of text or because the `maxLines` was
@@ -1416,128 +1356,12 @@ class Paragraph {
   ///
   /// See the discussion of the `maxLines` and `ellipsis` arguments at [new
   /// ParagraphStyle].
-  bool get didExceedMaxLines => _didExceedMaxLines;
-  bool _didExceedMaxLines = false;
-
-  ParagraphConstraints _lastUsedConstraints;
-
-  /// Returns horizontal alignment offset for single line text when rendering
-  /// directly into a canvas without css text alignment styling.
-  double webOnlyAlignOffset = 0.0;
-
-  /// If not null, this list would contain the strings representing each line
-  /// in the paragraph.
-  List<String> get webOnlyLines => _measurementResult?.lines;
+  bool get didExceedMaxLines;
 
   /// Computes the size and position of each glyph in the paragraph.
   ///
   /// The [ParagraphConstraints] control how wide the text is allowed to be.
-  void layout(ParagraphConstraints constraints) {
-    if (constraints == _lastUsedConstraints) {
-      return;
-    }
-
-    _measurementResult = _measurementService.measure(this, constraints);
-    _lastUsedConstraints = constraints;
-
-    if (_paragraphGeometricStyle.maxLines != null) {
-      _didExceedMaxLines = _naturalHeight > height;
-    } else {
-      _didExceedMaxLines = false;
-    }
-
-    if (_webOnlyIsSingleLine && constraints != null) {
-      switch (_textAlign) {
-        case TextAlign.center:
-          webOnlyAlignOffset = (constraints.width - maxIntrinsicWidth) / 2.0;
-          break;
-        case TextAlign.right:
-          webOnlyAlignOffset = constraints.width - maxIntrinsicWidth;
-          break;
-        case TextAlign.start:
-          webOnlyAlignOffset = _textDirection == TextDirection.rtl
-              ? constraints.width - maxIntrinsicWidth
-              : 0.0;
-          break;
-        case TextAlign.end:
-          webOnlyAlignOffset = _textDirection == TextDirection.ltr
-              ? constraints.width - maxIntrinsicWidth
-              : 0.0;
-          break;
-        default:
-          webOnlyAlignOffset = 0.0;
-          break;
-      }
-    }
-  }
-
-  /// Returns the style that contains properties for layout computation.
-  engine.ParagraphGeometricStyle webOnlyGetParagraphGeometricStyle() =>
-      _paragraphGeometricStyle;
-
-  /// This paragraph's text as a plain string.
-  ///
-  /// This value is non-null only if the text is not rich. See
-  /// [ParagraphBuilder] for more details on what is considered "rich".
-  String webOnlyGetPlainText() => _plainText;
-
-  /// This paragraph's color as a [Paint] object.
-  ///
-  /// This value is non-null only if the text is not rich. See
-  /// [ParagraphBuilder] for more details on what is considered "rich".
-  Paint webOnlyGetPaint() => _paint;
-
-  /// The paint drawn as a background for the paragraph.
-  PaintData get webOnlyBackground => _background?._paintData;
-
-  /// Whether or not this paragraph can be drawn on a single line.
-  bool get _webOnlyIsSingleLine => _measurementResult.isSingleLine;
-
-  /// Returns `true` if this paragraph can be directly painted to the canvas.
-  ///
-  ///
-  /// Examples of paragraphs that can't be drawn directly on the canvas:
-  ///
-  /// - Rich text where there are multiple pieces of text that have different
-  ///   styles.
-  /// - Paragraphs that contain decorations.
-  /// - Paragraphs that have a non-null word-spacing.
-  /// - Paragraphs with a background.
-  // TODO(yjbanov): This is Engine-internal API. We should make it private.
-  bool get webOnlyDrawOnCanvas {
-    bool canDrawTextOnCanvas;
-    if (engine.TextMeasurementService.enableExperimentalCanvasImplementation) {
-      canDrawTextOnCanvas = webOnlyLines != null;
-    } else {
-      canDrawTextOnCanvas = _webOnlyIsSingleLine &&
-          _plainText != null &&
-          _paragraphGeometricStyle.ellipsis == null;
-    }
-
-    return canDrawTextOnCanvas &&
-        _paragraphGeometricStyle.decoration == null &&
-        _paragraphGeometricStyle.wordSpacing == null;
-  }
-
-  /// Whether this paragraph has been laid out.
-  // TODO(yjbanov): This is Engine-internal API. We should make it private.
-  bool get webOnlyIsLaidOut => _measurementResult != null;
-
-  /// Asserts that the properties used to measure paragraph layout are the same
-  /// as the properties of this paragraphs root style.
-  ///
-  /// Ignores properties that do not affect layout, such as
-  /// [ParagraphStyle.textAlign].
-  bool webOnlyDebugHasSameRootStyle(engine.ParagraphGeometricStyle style) {
-    assert(() {
-      if (style != _paragraphGeometricStyle) {
-        throw Exception('Attempted to measure a paragraph whose style is '
-            'different from the style of the ruler used to measure it.');
-      }
-      return true;
-    }());
-    return true;
-  }
+  void layout(ParagraphConstraints constraints);
 
   /// Returns a list of text boxes that enclose the given text range.
   ///
@@ -1551,110 +1375,20 @@ class Paragraph {
   /// See [BoxHeightStyle] and [BoxWidthStyle] for full descriptions of each option.
   List<TextBox> getBoxesForRange(int start, int end,
       {BoxHeightStyle boxHeightStyle = BoxHeightStyle.tight,
-      BoxWidthStyle boxWidthStyle = BoxWidthStyle.tight}) {
-    assert(boxHeightStyle != null);
-    assert(boxWidthStyle != null);
-    return _getBoxesForRange(
-        start, end, boxHeightStyle.index, boxWidthStyle.index);
-  }
-
-  List<TextBox> _getBoxesForRange(
-      int start, int end, int boxHeightStyle, int boxWidthStyle) {
-    if (_plainText == null) {
-      return <TextBox>[];
-    }
-
-    final int length = _plainText.length;
-    // Ranges that are out of bounds should return an empty list.
-    if (start < 0 || end < 0 || start > length || end > length) {
-      return <TextBox>[];
-    }
-
-    return _measurementService.measureBoxesForRange(
-      this,
-      _lastUsedConstraints,
-      start: start,
-      end: end,
-      alignOffset: webOnlyAlignOffset,
-      textDirection: _textDirection,
-    );
-  }
-
-  Paragraph webOnlyCloneWithText(String plainText) {
-    return Paragraph._(
-      plainText: plainText,
-      paragraphElement: _paragraphElement.clone(true),
-      paragraphGeometricStyle: _paragraphGeometricStyle,
-      paint: _paint,
-      textAlign: _textAlign,
-      textDirection: _textDirection,
-      background: _background,
-    );
-  }
+      BoxWidthStyle boxWidthStyle = BoxWidthStyle.tight});
 
   /// Returns the text position closest to the given offset.
   ///
   /// It does so by performing a binary search to find where the tap occurred
   /// within the text.
-  TextPosition getPositionForOffset(Offset offset) {
-    if (_plainText == null) {
-      return const TextPosition(offset: 0);
-    }
-
-    final double dx = offset.dx - webOnlyAlignOffset;
-    final engine.TextMeasurementService instance = _measurementService;
-
-    int low = 0;
-    int high = _plainText.length;
-    do {
-      final int current = (low + high) ~/ 2;
-      final double width = instance.measureSubstringWidth(this, 0, current);
-      if (width < dx) {
-        low = current;
-      } else if (width > dx) {
-        high = current;
-      } else {
-        low = high = current;
-      }
-    } while (high - low > 1);
-
-    if (low == high) {
-      // The offset falls exactly in between the two letters.
-      return TextPosition(offset: high, affinity: TextAffinity.upstream);
-    }
-
-    final double lowWidth = instance.measureSubstringWidth(this, 0, low);
-    final double highWidth = instance.measureSubstringWidth(this, 0, high);
-
-    if (dx - lowWidth < highWidth - dx) {
-      // The offset is closer to the low index.
-      return TextPosition(offset: low, affinity: TextAffinity.downstream);
-    } else {
-      // The offset is closer to high index.
-      return TextPosition(offset: high, affinity: TextAffinity.upstream);
-    }
-  }
+  TextPosition getPositionForOffset(Offset offset);
 
   /// Returns the [start, end] of the word at the given offset. Characters not
   /// part of a word, such as spaces, symbols, and punctuation, have word breaks
   /// on both sides. In such cases, this method will return [offset, offset+1].
   /// Word boundaries are defined more precisely in Unicode Standard Annex #29
   /// http://www.unicode.org/reports/tr29/#Word_Boundaries
-  List<int> getWordBoundary(int offset) {
-    if (_plainText == null) {
-      return <int>[offset, offset];
-    }
-
-    final int start = engine.WordBreaker.prevBreakIndex(_plainText, offset);
-    final int end = engine.WordBreaker.nextBreakIndex(_plainText, offset);
-    return <int>[start, end];
-  }
-
-  // TODO(yjbanov): figure out if we need this.
-  // Redirecting the paint function in this way solves some dependency problems
-  // in the C++ code. If we straighten out the C++ dependencies, we can remove
-  // this indirection.
-//  void _paint(Canvas canvas, double x, double y) native 'Paragraph_paint';
+  List<int> getWordBoundary(int offset);
 }
 
 /// Builds a [Paragraph] containing text with the given styling information.
@@ -1694,7 +1428,7 @@ class ParagraphBuilder {
         strutFontFamilies.addAll(style._strutStyle._fontFamilyFallback);
       }
     }
-    applyParagraphStyleToElement(
+    _applyParagraphStyleToElement(
         element: _paragraphElement, style: _paragraphStyle);
   }
 
@@ -1855,11 +1589,11 @@ class ParagraphBuilder {
 
     if (i >= _ops.length) {
       // Empty paragraph.
-      applyTextStyleToElement(
+      _applyTextStyleToElement(
           element: _paragraphElement, style: cumulativeStyle);
-      return Paragraph._(
+      return engine.EngineParagraph(
         paragraphElement: _paragraphElement,
-        paragraphGeometricStyle: engine.ParagraphGeometricStyle(
+        geometricStyle: engine.ParagraphGeometricStyle(
           fontFamily: fontFamily,
           fontWeight: fontWeight,
           fontStyle: fontStyle,
@@ -1902,16 +1636,17 @@ class ParagraphBuilder {
 
     final String plainText = plainTextBuffer.toString();
     engine.domRenderer.appendText(_paragraphElement, plainText);
-    applyTextStyleToElement(element: _paragraphElement, style: cumulativeStyle);
+    _applyTextStyleToElement(
+        element: _paragraphElement, style: cumulativeStyle);
     // Since this is a plain paragraph apply background color to paragraph tag
     // instead of individual spans.
     if (cumulativeStyle._background != null) {
       applyTextBackgroundToElement(
           element: _paragraphElement, style: cumulativeStyle);
     }
-    return Paragraph._(
+    return engine.EngineParagraph(
       paragraphElement: _paragraphElement,
-      paragraphGeometricStyle: engine.ParagraphGeometricStyle(
+      geometricStyle: engine.ParagraphGeometricStyle(
         fontFamily: fontFamily,
         fontWeight: fontWeight,
         fontStyle: fontStyle,
@@ -1940,7 +1675,7 @@ class ParagraphBuilder {
       final dynamic op = _ops[i];
       if (op is TextStyle) {
         final html.SpanElement span = engine.domRenderer.createElement('span');
-        applyTextStyleToElement(element: span, style: op);
+        _applyTextStyleToElement(element: span, style: op);
         if (op._background != null) {
           applyTextBackgroundToElement(element: span, style: op);
         }
@@ -1955,9 +1690,9 @@ class ParagraphBuilder {
       }
     }
 
-    return Paragraph._(
+    return engine.EngineParagraph(
       paragraphElement: _paragraphElement,
-      paragraphGeometricStyle: engine.ParagraphGeometricStyle(
+      geometricStyle: engine.ParagraphGeometricStyle(
         fontFamily: _paragraphStyle._fontFamily,
         fontWeight: _paragraphStyle._fontWeight,
         fontStyle: _paragraphStyle._fontStyle,
@@ -2000,7 +1735,7 @@ void applyTextBackgroundToElement({
 /// corresponding CSS equivalents.
 ///
 /// If [previousStyle] is not null, updates only the mismatching attributes.
-void applyTextStyleToElement({
+void _applyTextStyleToElement({
   @required html.HtmlElement element,
   @required TextStyle style,
   TextStyle previousStyle,
@@ -2018,7 +1753,7 @@ void applyTextStyleToElement({
       cssStyle.fontSize = '${style._fontSize.floor()}px';
     }
     if (style._fontWeight != null) {
-      cssStyle.fontWeight = webOnlyFontWeightToCss(style._fontWeight);
+      cssStyle.fontWeight = engine.fontWeightToCss(style._fontWeight);
     }
     if (style._fontStyle != null) {
       cssStyle.fontStyle =
@@ -2049,7 +1784,7 @@ void applyTextStyleToElement({
     }
 
     if (style._fontWeight != previousStyle._fontWeight) {
-      cssStyle.fontWeight = webOnlyFontWeightToCss(style._fontWeight);
+      cssStyle.fontWeight = engine.fontWeightToCss(style._fontWeight);
     }
 
     if (style._fontStyle != previousStyle._fontStyle) {
@@ -2130,7 +1865,7 @@ String _decorationStyleToCssString(TextDecorationStyle decorationStyle) {
 /// their corresponding CSS equivalents.
 ///
 /// If [previousStyle] is not null, updates only the mismatching attributes.
-void applyParagraphStyleToElement({
+void _applyParagraphStyleToElement({
   @required html.HtmlElement element,
   @required ParagraphStyle style,
   ParagraphStyle previousStyle,
@@ -2154,7 +1889,7 @@ void applyParagraphStyleToElement({
       cssStyle.fontSize = '${style._fontSize.floor()}px';
     }
     if (style._fontWeight != null) {
-      cssStyle.fontWeight = webOnlyFontWeightToCss(style._fontWeight);
+      cssStyle.fontWeight = engine.fontWeightToCss(style._fontWeight);
     }
     if (style._fontStyle != null) {
       cssStyle.fontStyle =
@@ -2179,7 +1914,7 @@ void applyParagraphStyleToElement({
           style._fontSize != null ? '${style._fontSize.floor()}px' : null;
     }
     if (style._fontWeight != previousStyle._fontWeight) {
-      cssStyle.fontWeight = webOnlyFontWeightToCss(style._fontWeight);
+      cssStyle.fontWeight = engine.fontWeightToCss(style._fontWeight);
     }
     if (style._fontStyle != previousStyle._fontStyle) {
       cssStyle.fontStyle = style._fontStyle != null
@@ -2190,42 +1925,6 @@ void applyParagraphStyleToElement({
       cssStyle.fontFamily = style._fontFamily;
     }
   }
-}
-
-/// Converts [fontWeight] to its CSS equivalent value.
-String webOnlyFontWeightToCss(FontWeight fontWeight) {
-  if (fontWeight == null) {
-    return null;
-  }
-
-  switch (fontWeight.index) {
-    case 0:
-      return '100';
-    case 1:
-      return '200';
-    case 2:
-      return '300';
-    case 3:
-      return 'normal';
-    case 4:
-      return '500';
-    case 5:
-      return '600';
-    case 6:
-      return 'bold';
-    case 7:
-      return '800';
-    case 8:
-      return '900';
-  }
-
-  assert(() {
-    throw AssertionError(
-      'Failed to convert font weight $fontWeight to CSS.',
-    );
-  }());
-
-  return '';
 }
 
 /// Loads a font from a buffer and makes it available for rendering text.

@@ -73,7 +73,7 @@ class ParagraphGeometricStyle {
 
     // Font weight.
     if (fontWeight != null) {
-      result.write(ui.webOnlyFontWeightToCss(fontWeight));
+      result.write(fontWeightToCss(fontWeight));
     } else {
       result.write(DomRenderer.defaultFontWeight);
     }
@@ -166,10 +166,10 @@ class TextDimensions {
   ///
   /// The primary efficiency gain is from rare occurrence of rich text in
   /// typical apps.
-  void updateText(ui.Paragraph from, ParagraphGeometricStyle style) {
+  void updateText(EngineParagraph from, ParagraphGeometricStyle style) {
     assert(from != null);
     assert(_element != null);
-    assert(from.webOnlyDebugHasSameRootStyle(style));
+    assert(from._debugHasSameRootStyle(style));
     assert(() {
       final bool wasEmptyOrPlainText = _element.childNodes.isEmpty ||
           (_element.childNodes.length == 1 &&
@@ -185,7 +185,7 @@ class TextDimensions {
     }());
 
     _invalidateBoundsCache();
-    final String plainText = from.webOnlyGetPlainText();
+    final String plainText = from._plainText;
     if (plainText != null) {
       // Plain text: just set the string. The paragraph's style is assumed to
       // match the style set on the `element`. Setting text as plain string is
@@ -195,7 +195,7 @@ class TextDimensions {
     } else {
       // Rich text: deeply copy contents. This is the slow case that should be
       // avoided if fast layout performance is desired.
-      final html.Element copy = from.webOnlyGetParagraphElement().clone(true);
+      final html.Element copy = from._paragraphElement.clone(true);
       _element.children.addAll(copy.children);
     }
   }
@@ -221,9 +221,8 @@ class TextDimensions {
     _element.style
       ..fontSize = style.fontSize != null ? '${style.fontSize.floor()}px' : null
       ..fontFamily = style.effectiveFontFamily
-      ..fontWeight = style.fontWeight != null
-          ? ui.webOnlyFontWeightToCss(style.fontWeight)
-          : null
+      ..fontWeight =
+          style.fontWeight != null ? fontWeightToCss(style.fontWeight) : null
       ..fontStyle = style.fontStyle != null
           ? style.fontStyle == ui.FontStyle.normal ? 'normal' : 'italic'
           : null
@@ -498,12 +497,12 @@ class ParagraphRuler {
   }
 
   /// The paragraph being measured.
-  ui.Paragraph _paragraph;
+  EngineParagraph _paragraph;
 
   /// Prepares this ruler for measuring the given [paragraph].
   ///
   /// This method must be called before calling any of the `measure*` methods.
-  void willMeasure(ui.Paragraph paragraph) {
+  void willMeasure(EngineParagraph paragraph) {
     assert(paragraph != null);
     assert(() {
       if (_paragraph != null) {
@@ -513,7 +512,7 @@ class ParagraphRuler {
       }
       return true;
     }());
-    assert(paragraph.webOnlyDebugHasSameRootStyle(style));
+    assert(paragraph._debugHasSameRootStyle(style));
     _paragraph = paragraph;
   }
 
@@ -539,7 +538,7 @@ class ParagraphRuler {
     // which doesn't work. So we need to replace it with a whitespace. The
     // correct fix would be to do line height and baseline measurements and
     // cache them separately.
-    if (_paragraph.webOnlyGetPlainText() == '') {
+    if (_paragraph._plainText == '') {
       singleLineDimensions.updateTextToSpace();
     } else {
       singleLineDimensions.updateText(_paragraph, style);
@@ -590,7 +589,7 @@ class ParagraphRuler {
     //
     // We do not do this for plain text, because replacing plain text is more
     // expensive than paying the cost of the DOM mutation to clean it.
-    if (_paragraph.webOnlyGetPlainText() == null) {
+    if (_paragraph._plainText == null) {
       domRenderer
         ..clearDom(singleLineDimensions._element)
         ..clearDom(minIntrinsicDimensions._element)
@@ -684,8 +683,8 @@ class ParagraphRuler {
   // is changing.
   static const int _constraintCacheSize = 8;
 
-  void cacheMeasurement(ui.Paragraph paragraph, MeasurementResult item) {
-    final String plainText = paragraph.webOnlyGetPlainText();
+  void cacheMeasurement(EngineParagraph paragraph, MeasurementResult item) {
+    final String plainText = paragraph._plainText;
     final List<MeasurementResult> constraintCache =
         _measurementCache[plainText] ??= <MeasurementResult>[];
     constraintCache.add(item);
@@ -703,9 +702,9 @@ class ParagraphRuler {
   }
 
   MeasurementResult cacheLookup(
-      ui.Paragraph paragraph, ui.ParagraphConstraints constraints) {
+      EngineParagraph paragraph, ui.ParagraphConstraints constraints) {
     final List<MeasurementResult> constraintCache =
-        _measurementCache[paragraph.webOnlyGetPlainText()];
+        _measurementCache[paragraph._plainText];
     if (constraintCache == null) {
       return null;
     }
@@ -764,7 +763,7 @@ class MeasurementResult {
   /// satisfy [constraintWidth],
   final List<String> lines;
 
-  MeasurementResult(
+  const MeasurementResult(
     this.constraintWidth, {
     @required this.isSingleLine,
     @required this.width,

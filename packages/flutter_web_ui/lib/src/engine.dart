@@ -81,6 +81,7 @@ part 'engine/test_embedding.dart';
 part 'engine/text/font_collection.dart';
 part 'engine/text/line_breaker.dart';
 part 'engine/text/measurement.dart';
+part 'engine/text/paragraph.dart';
 part 'engine/text/ruler.dart';
 part 'engine/text/unicode_range.dart';
 part 'engine/text/word_break_properties.dart';

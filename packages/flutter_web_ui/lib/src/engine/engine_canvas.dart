@@ -64,7 +64,7 @@ abstract class EngineCanvas {
   void drawImageRect(
       ui.Image image, ui.Rect src, ui.Rect dst, ui.PaintData paint);
 
-  void drawParagraph(ui.Paragraph paragraph, ui.Offset offset);
+  void drawParagraph(EngineParagraph paragraph, ui.Offset offset);
 }
 
 /// Adds an [offset] transformation to a [transform] matrix and returns the
@@ -237,14 +237,13 @@ mixin SaveStackTracking on EngineCanvas {
 }
 
 html.Element _drawParagraphElement(
-  ui.Paragraph paragraph,
+  EngineParagraph paragraph,
   ui.Offset offset, {
   Matrix4 transform,
 }) {
-  assert(paragraph.webOnlyIsLaidOut);
+  assert(paragraph._isLaidOut);
 
-  final html.Element paragraphElement =
-      paragraph.webOnlyGetParagraphElement().clone(true);
+  final html.Element paragraphElement = paragraph._paragraphElement.clone(true);
 
   final html.CssStyleDeclaration paragraphStyle = paragraphElement.style;
   paragraphStyle
@@ -262,8 +261,7 @@ html.Element _drawParagraphElement(
           matrix4ToCssTransform(transformWithOffset(transform, offset));
   }
 
-  final ParagraphGeometricStyle style =
-      paragraph.webOnlyGetParagraphGeometricStyle();
+  final ParagraphGeometricStyle style = paragraph._geometricStyle;
 
   // TODO(flutter_web): https://github.com/flutter/flutter/issues/33223
   if (style.ellipsis != null &&

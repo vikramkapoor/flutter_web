@@ -791,34 +791,35 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
   }
 
   @override
-  void drawParagraph(ui.Paragraph paragraph, ui.Offset offset) {
-    assert(paragraph.webOnlyIsLaidOut);
+  void drawParagraph(EngineParagraph paragraph, ui.Offset offset) {
+    assert(paragraph._isLaidOut);
 
-    final ParagraphGeometricStyle style =
-        paragraph.webOnlyGetParagraphGeometricStyle();
+    final ParagraphGeometricStyle style = paragraph._geometricStyle;
 
-    if (paragraph.webOnlyDrawOnCanvas) {
+    if (paragraph._drawOnCanvas) {
       final List<String> lines =
-          paragraph.webOnlyLines ?? <String>[paragraph.webOnlyGetPlainText()];
+          paragraph._lines ?? <String>[paragraph._plainText];
 
-      if (paragraph.webOnlyBackground != null) {
+      final ui.PaintData backgroundPaint =
+          paragraph._background?.webOnlyPaintData;
+      if (backgroundPaint != null) {
         final ui.Rect rect = ui.Rect.fromLTWH(
             offset.dx, offset.dy, paragraph.width, paragraph.height);
-        drawRect(rect, paragraph.webOnlyBackground);
+        drawRect(rect, backgroundPaint);
       }
 
       if (style != _cachedLastStyle) {
         ctx.font = style.cssFontString;
         _cachedLastStyle = style;
       }
-      _applyPaint(paragraph.webOnlyGetPaint().webOnlyPaintData);
+      _applyPaint(paragraph._paint.webOnlyPaintData);
 
-      final double x = offset.dx + paragraph.webOnlyAlignOffset;
+      final double x = offset.dx + paragraph._alignOffset;
       double y = offset.dy + paragraph.alphabeticBaseline;
       final int len = lines.length;
       for (int i = 0; i < len; i++) {
         _drawTextLine(style, lines[i], x, y);
-        y += paragraph.webOnlyLineHeight;
+        y += paragraph._lineHeight;
       }
       _resetPaint();
       return;

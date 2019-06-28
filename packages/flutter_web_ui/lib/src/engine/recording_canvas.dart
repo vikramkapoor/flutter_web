@@ -287,20 +287,21 @@ class RecordingCanvas {
   }
 
   void drawParagraph(ui.Paragraph paragraph, ui.Offset offset) {
-    if (!paragraph.webOnlyIsLaidOut) {
+    final EngineParagraph engineParagraph = paragraph;
+    if (!engineParagraph._isLaidOut) {
       // Ignore non-laid out paragraphs. This matches Flutter's behavior.
       return;
     }
 
     _didDraw = true;
-    if (paragraph.webOnlyGetParagraphGeometricStyle().ellipsis != null) {
+    if (engineParagraph._geometricStyle.ellipsis != null) {
       _hasArbitraryPaint = true;
     }
     final double left = offset.dx;
     final double top = offset.dy;
     _paintBounds.growLTRB(
-        left, top, left + paragraph.width, top + paragraph.height);
-    _commands.add(PaintDrawParagraph(paragraph, offset));
+        left, top, left + engineParagraph.width, top + engineParagraph.height);
+    _commands.add(PaintDrawParagraph(engineParagraph, offset));
   }
 
   void drawShadow(ui.Path path, ui.Color color, double elevation,
@@ -953,7 +954,7 @@ class PaintDrawImageRect extends PaintCommand {
 }
 
 class PaintDrawParagraph extends PaintCommand {
-  final ui.Paragraph paragraph;
+  final EngineParagraph paragraph;
   final ui.Offset offset;
 
   PaintDrawParagraph(this.paragraph, this.offset);
@@ -966,7 +967,7 @@ class PaintDrawParagraph extends PaintCommand {
   @override
   String toString() {
     if (assertionsEnabled) {
-      return 'DrawParagraph(${paragraph.webOnlyGetPlainText()}, $offset)';
+      return 'DrawParagraph(${paragraph._plainText}, $offset)';
     } else {
       return super.toString();
     }

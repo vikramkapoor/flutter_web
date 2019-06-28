@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 import 'package:flutter_web_ui/ui.dart';
+import 'package:flutter_web_ui/src/engine.dart';
 import 'package:flutter_web_test/flutter_web_test.dart';
 
 void main() {
@@ -72,9 +73,9 @@ void main() {
       fontSize: 14.0,
     ));
     builder.addText('How do you do this fine morning?');
-    final Paragraph paragraph = builder.build();
+    final EngineParagraph paragraph = builder.build();
 
-    expect(paragraph.webOnlyGetParagraphElement().parent, isNull);
+    expect(paragraph.paragraphElement.parent, isNull);
     expect(paragraph.height, 0.0);
     expect(paragraph.width, -1.0);
     expect(paragraph.minIntrinsicWidth, 0.0);
@@ -84,7 +85,7 @@ void main() {
 
     paragraph.layout(const ParagraphConstraints(width: 60.0));
 
-    expect(paragraph.webOnlyGetParagraphElement().parent, isNull);
+    expect(paragraph.paragraphElement.parent, isNull);
     expect(paragraph.height, greaterThan(0.0));
     expect(paragraph.width, greaterThan(0.0));
     expect(paragraph.minIntrinsicWidth, greaterThan(0.0));
@@ -138,10 +139,9 @@ void main() {
       fontSize: 15.0,
     ));
     builder.addText('hi');
-    Paragraph paragraph = builder.build();
-    expect(paragraph.webOnlyGetPlainText(), isNotNull);
-    expect(paragraph.webOnlyGetParagraphGeometricStyle().fontWeight,
-        FontWeight.normal);
+    EngineParagraph paragraph = builder.build();
+    expect(paragraph.plainText, isNotNull);
+    expect(paragraph.geometricStyle.fontWeight, FontWeight.normal);
 
     builder = ParagraphBuilder(ParagraphStyle(
       fontFamily: 'sans-serif',
@@ -152,9 +152,8 @@ void main() {
     builder.pushStyle(TextStyle(fontWeight: FontWeight.bold));
     builder.addText('hi');
     paragraph = builder.build();
-    expect(paragraph.webOnlyGetPlainText(), isNotNull);
-    expect(paragraph.webOnlyGetParagraphGeometricStyle().fontWeight,
-        FontWeight.bold);
+    expect(paragraph.plainText, isNotNull);
+    expect(paragraph.geometricStyle.fontWeight, FontWeight.bold);
   });
 
   test('$ParagraphBuilder detects rich text', () {
@@ -167,10 +166,9 @@ void main() {
     builder.addText('h');
     builder.pushStyle(TextStyle(fontWeight: FontWeight.bold));
     builder.addText('i');
-    final Paragraph paragraph = builder.build();
-    expect(paragraph.webOnlyGetPlainText(), isNull);
-    expect(paragraph.webOnlyGetParagraphGeometricStyle().fontWeight,
-        FontWeight.normal);
+    final EngineParagraph paragraph = builder.build();
+    expect(paragraph.plainText, isNull);
+    expect(paragraph.geometricStyle.fontWeight, FontWeight.normal);
   });
 
   test('$ParagraphBuilder treats empty text as plain', () {
@@ -181,9 +179,8 @@ void main() {
       fontSize: 15.0,
     ));
     builder.pushStyle(TextStyle(fontWeight: FontWeight.bold));
-    final Paragraph paragraph = builder.build();
-    expect(paragraph.webOnlyGetPlainText(), '');
-    expect(paragraph.webOnlyGetParagraphGeometricStyle().fontWeight,
-        FontWeight.bold);
+    final EngineParagraph paragraph = builder.build();
+    expect(paragraph.plainText, '');
+    expect(paragraph.geometricStyle.fontWeight, FontWeight.bold);
   });
 }
