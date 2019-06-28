@@ -75,7 +75,6 @@ class DomRenderer {
     registerHotRestartListener(() {
       _resizeSubscription?.cancel();
       _staleHotRestartState.addAll(<html.Element>[
-        _sceneHostElement,
         _glassPaneElement,
         _styleElement,
         _viewportMeta,
@@ -339,10 +338,6 @@ flt-glass-pane * {
           'maximum-scale=1.0, user-scalable=no';
     html.document.head.append(_viewportMeta);
 
-    _sceneHostElement?.remove();
-    _sceneHostElement = createElement('flt-scene-host');
-    bodyElement.append(_sceneHostElement);
-
     // IMPORTANT: the glass pane element must come after the scene element in the DOM node list so
     //            it can intercept input events.
     _glassPaneElement?.remove();
@@ -354,6 +349,13 @@ flt-glass-pane * {
       ..bottom = '0'
       ..left = '0';
     bodyElement.append(_glassPaneElement);
+
+    _sceneHostElement = createElement('flt-scene-host');
+
+    // Don't allow the scene to receive pointer events.
+    _sceneHostElement.style.pointerEvents = 'none';
+
+    _glassPaneElement.append(_sceneHostElement);
 
     EngineSemanticsOwner.instance.autoEnableOnTap(this);
     PointerBinding(this);

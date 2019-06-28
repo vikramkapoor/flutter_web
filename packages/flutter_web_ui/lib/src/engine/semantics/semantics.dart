@@ -1371,7 +1371,13 @@ class EngineSemanticsOwner {
       ..top = '0'
       ..right = '0'
       ..bottom = '0';
-    domRenderer.glassPaneElement.append(_semanticsPlaceholder);
+    // Insert the semantics placeholder after the scene host. For all widgets
+    // in the scene, except for platform widgets, the scene host will pass the
+    // pointer events through to the semantics tree. However, for platform
+    // views, the pointer events will not pass through, and will be handled
+    // by the platform view.
+    domRenderer.glassPaneElement
+        .insertBefore(_semanticsPlaceholder, domRenderer.sceneHostElement);
   }
 
   /// Whether the user has requested that [updateSemantics] be called when
@@ -1617,7 +1623,14 @@ class EngineSemanticsOwner {
       // focusing by touch, only by tabbing around the UI. If semantics is in
       // front of glasspane, then DOM event won't bubble up to the glasspane so
       // it can forward events to the framework.
-      domRenderer.glassPaneElement.append(_rootSemanticsElement);
+      //
+      // We insert the semantics root before the scene host. For all widgets
+      // in the scene, except for platform widgets, the scene host will pass the
+      // pointer events through to the semantics tree. However, for platform
+      // views, the pointer events will not pass through, and will be handled
+      // by the platform view.
+      domRenderer.glassPaneElement
+          .insertBefore(_rootSemanticsElement, domRenderer.sceneHostElement);
     }
 
     _finalizeTree();

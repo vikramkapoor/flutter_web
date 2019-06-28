@@ -16,6 +16,22 @@ class PersistedPlatformView extends PersistedLeafSurface {
   @override
   html.Element createElement() {
     _hostElement = defaultCreateElement('flt-platform-view');
+
+    // Allow the platform view host element to receive pointer events.
+    //
+    // This is to allow platform view HTML elements to be interactive.
+    //
+    // ACCESSIBILITY NOTE: The way we enable accessibility on Flutter for web
+    // is to have a full-page button which waits for a double tap. Placing this
+    // full-page button in front of the scene would cause platform views not
+    // to receive pointer events. The tradeoff is that by placing the scene in
+    // front of the semantics placeholder will cause platform views to block
+    // pointer events from reaching the placeholder. This means that in order
+    // to enable accessibility, you must double tap the app *outside of a
+    // platform view*. As a consequence, a full-screen platform view will make
+    // it impossible to enable accessibility.
+    _hostElement.style.pointerEvents = 'auto';
+
     _shadowRoot = _hostElement.attachShadow(<String, String>{'mode': 'open'});
     final html.StyleElement _styleReset = html.StyleElement();
     _styleReset.innerHtml = '''

@@ -10,10 +10,19 @@ import 'package:flutter_web/material.dart';
 
 void main() {
   ui.platformViewRegistry.registerViewFactory(
-      'hello-world-html', (int viewId) => DivElement()..text = 'Hello, World');
+      'hello-world-html',
+      (int viewId) => IFrameElement()
+        ..width = '640'
+        ..height = '360'
+        ..src = 'https://www.youtube.com/embed/IyFZznAk69U'
+        ..style.border = 'none');
 
   runApp(Directionality(
     textDirection: TextDirection.ltr,
-    child: HtmlView(viewType: 'hello-world-html'),
+    child: SizedBox(
+      width: 640,
+      height: 360,
+      child: HtmlView(viewType: 'hello-world-html'),
+    ),
   ));
 }
