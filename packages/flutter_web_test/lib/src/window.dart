@@ -110,6 +110,8 @@ class TestWindow implements Window {
     onMetricsChanged();
   }
 
+  WindowPadding get viewPadding => WindowPadding.zero;
+
   @override
   WindowPadding get padding => _paddingTestValue ?? _window.padding;
 
@@ -282,6 +284,8 @@ class TestWindow implements Window {
   void render(Scene scene) {
     _window.render(scene);
   }
+
+  TimingsCallback onReportTimings;
 
   @override
   bool get semanticsEnabled =>

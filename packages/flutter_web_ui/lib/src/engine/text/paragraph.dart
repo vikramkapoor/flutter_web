@@ -1,4 +1,4 @@
-// Copyright 2018 The Chromium Authors. All rights reserved.
+// Copyright 2013 The Flutter Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -141,6 +141,11 @@ class EngineParagraph implements ui.Paragraph {
           break;
       }
     }
+  }
+
+  @override
+  List<ui.TextBox> getBoxesForPlaceholders() {
+    return const <ui.TextBox>[];
   }
 
   /// Returns `true` if this paragraph can be directly painted to the canvas.
@@ -415,6 +420,7 @@ class EngineTextStyle implements ui.TextStyle {
     ui.Paint background,
     ui.Paint foreground,
     List<ui.Shadow> shadows,
+    List<ui.FontFeature> fontFeatures,
   })  : assert(
             color == null || foreground == null,
             'Cannot provide both a color and a foreground\n'
@@ -682,6 +688,26 @@ class EngineParagraphBuilder implements ui.ParagraphBuilder {
   @override
   void pushStyle(ui.TextStyle style) {
     _ops.add(style);
+  }
+
+  @override
+  int get placeholderCount => _placeholderCount;
+  int _placeholderCount;
+
+  @override
+  List<double> get placeholderScales => _placeholderScales;
+  List<double> _placeholderScales = <double>[];
+
+  void addPlaceholder(
+    double width,
+    double height,
+    ui.PlaceholderAlignment alignment, {
+    double scale,
+    double baselineOffset,
+    ui.TextBaseline baseline,
+  }) {
+    // TODO(garyq): Implement stub_ui version of this.
+    throw UnimplementedError();
   }
 
   // TODO(yjbanov): do we need to do this?
