@@ -5,6 +5,7 @@
 library engine;
 
 import 'dart:async';
+import 'dart:collection' show ListBase;
 import 'dart:convert' hide Codec;
 import 'dart:developer' as developer;
 import 'dart:html' as html;
@@ -14,7 +15,6 @@ import 'dart:math' as math;
 import 'dart:typed_data';
 
 import 'package:meta/meta.dart';
-import 'package:typed_data/typed_buffers.dart' show Uint8Buffer;
 
 import '../ui.dart' as ui;
 
@@ -63,6 +63,7 @@ part 'engine/semantics/scrollable.dart';
 part 'engine/semantics/semantics.dart';
 part 'engine/semantics/tappable.dart';
 part 'engine/semantics/text_field.dart';
+part 'engine/services/buffers.dart';
 part 'engine/services/message_codec.dart';
 part 'engine/services/message_codecs.dart';
 part 'engine/services/serialization.dart';

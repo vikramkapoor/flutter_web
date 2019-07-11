@@ -698,6 +698,7 @@ class EngineParagraphBuilder implements ui.ParagraphBuilder {
   List<double> get placeholderScales => _placeholderScales;
   List<double> _placeholderScales = <double>[];
 
+  @override
   void addPlaceholder(
     double width,
     double height,

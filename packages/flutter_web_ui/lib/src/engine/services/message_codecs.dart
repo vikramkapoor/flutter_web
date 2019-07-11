@@ -272,7 +272,7 @@ class StandardMessageCodec implements MessageCodec<dynamic> {
   @override
   ByteData encodeMessage(dynamic message) {
     if (message == null) return null;
-    final WriteBuffer buffer = new WriteBuffer();
+    final WriteBuffer buffer = WriteBuffer();
     writeValue(buffer, message);
     return buffer.done();
   }
@@ -280,7 +280,7 @@ class StandardMessageCodec implements MessageCodec<dynamic> {
   @override
   dynamic decodeMessage(ByteData message) {
     if (message == null) return null;
-    final ReadBuffer buffer = new ReadBuffer(message);
+    final ReadBuffer buffer = ReadBuffer(message);
     final dynamic result = readValue(buffer);
     if (buffer.hasRemaining) throw const FormatException('Message corrupted');
     return result;
@@ -419,7 +419,7 @@ class StandardMessageCodec implements MessageCodec<dynamic> {
         break;
       case _valueList:
         final int length = readSize(buffer);
-        result = new List<dynamic>(length);
+        result = List<dynamic>(length);
         for (int i = 0; i < length; i++) {
           result[i] = readValue(buffer);
         }

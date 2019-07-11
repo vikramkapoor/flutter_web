@@ -13,8 +13,8 @@ part of engine;
 class WriteBuffer {
   /// Creates an interface for incrementally building a [ByteData] instance.
   WriteBuffer() {
-    _buffer = new Uint8Buffer();
-    _eightBytes = new ByteData(8);
+    _buffer = Uint8Buffer();
+    _eightBytes = ByteData(8);
     _eightBytesAsList = _eightBytes.buffer.asUint8List();
   }
 
@@ -87,7 +87,9 @@ class WriteBuffer {
   void _alignTo(int alignment) {
     final int mod = _buffer.length % alignment;
     if (mod != 0) {
-      for (int i = 0; i < alignment - mod; i++) _buffer.add(0);
+      for (int i = 0; i < alignment - mod; i++) {
+        _buffer.add(0);
+      }
     }
   }
 
@@ -193,6 +195,8 @@ class ReadBuffer {
 
   void _alignTo(int alignment) {
     final int mod = _position % alignment;
-    if (mod != 0) _position += alignment - mod;
+    if (mod != 0) {
+      _position += alignment - mod;
+    }
   }
 }
