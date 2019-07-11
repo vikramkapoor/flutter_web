@@ -838,7 +838,9 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
     } else {
       final String cssTransform =
           matrix4ToCssTransform(transformWithOffset(currentTransform, offset));
-      paragraphElement.style.transform = cssTransform;
+      paragraphElement.style
+        ..transformOrigin = '0 0 0'
+        ..transform = cssTransform;
       rootElement.append(paragraphElement);
     }
     _children.add(paragraphElement);
@@ -1075,8 +1077,9 @@ List<html.Element> _clipContent(List<_SaveClipEntry> clipStack,
 
   root.style.position = 'absolute';
   domRenderer.append(curElement, content);
-  content.style.transform =
-      _cssTransformAtOffset(currentTransform, offset.dx, offset.dy);
+  content.style
+    ..transformOrigin = '0 0 0'
+    ..transform = _cssTransformAtOffset(currentTransform, offset.dx, offset.dy);
   return <html.Element>[root]..addAll(clipDefs);
 }
 
