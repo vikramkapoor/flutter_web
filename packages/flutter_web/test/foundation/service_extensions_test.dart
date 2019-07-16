@@ -1,6 +1,7 @@
 // Copyright 2017 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Synced. * Contains Web DELTA *
 
 import 'dart:async';
 import 'dart:convert';
@@ -717,7 +718,7 @@ void main() {
     // ...then increment this number.
     // TODO(flutter_web): upstream , 3 extensions are not supported for web.
     expect(binding.extensions.length,
-        25 + widgetInspectorExtensionCount - (ui.isWeb ? 5 : 0));
+        26 + widgetInspectorExtensionCount - (ui.isWeb ? 5 : 0));
 
     expect(console, isEmpty);
     debugPrint = debugPrintThrottled;

@@ -1,6 +1,7 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Synced. * Contains Web DELTA *
 
 import 'package:flutter_web_ui/ui.dart' show TextDirection;
 
@@ -41,7 +42,7 @@ export 'package:flutter_web_ui/ui.dart'
         TextDirection,
         TextPosition,
         TileMode,
-// TODO(yjbanov):  VertexMode,
+        VertexMode,
         VoidCallback,
         hashValues,
         hashList;

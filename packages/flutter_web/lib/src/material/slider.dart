@@ -15,6 +15,7 @@ import 'package:flutter_web/widgets.dart';
 
 import 'constants.dart';
 import 'debug.dart';
+import 'material.dart';
 import 'slider_theme.dart';
 import 'theme.dart';
 
@@ -745,7 +746,7 @@ class _RenderSlider extends RenderBox {
       ];
   double get _minPreferredTrackHeight => _sliderTheme.trackHeight;
 
-  _SliderState _state;
+  final _SliderState _state;
   Animation<double> _overlayAnimation;
   Animation<double> _valueIndicatorAnimation;
   Animation<double> _enableAnimation;

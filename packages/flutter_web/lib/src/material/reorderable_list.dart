@@ -1,6 +1,7 @@
 // Copyright 2018 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Synced 2019-07-16T14:31:01.461796.
 
 import 'dart:math';
 
@@ -25,9 +26,7 @@ import 'material_localizations.dart';
 /// [ReorderableListView] will need to account for this when inserting before
 /// [newIndex].
 ///
-/// ## Sample code
-///
-/// Example implementation:
+/// {@tool sample}
 ///
 /// ```dart
 /// final List<MyDataObject> backingList = <MyDataObject>[/* ... */];
@@ -41,6 +40,7 @@ import 'material_localizations.dart';
 ///   backingList.insert(newIndex, element);
 /// }
 /// ```
+/// {@end-tool}
 typedef ReorderCallback = void Function(int oldIndex, int newIndex);
 
 /// A list whose items the user can interactively reorder by dragging.
@@ -59,6 +59,7 @@ class ReorderableListView extends StatefulWidget {
     @required this.onReorder,
     this.scrollDirection = Axis.vertical,
     this.padding,
+    this.reverse = false,
   })  : assert(scrollDirection != null),
         assert(onReorder != null),
         assert(children != null),
@@ -82,6 +83,20 @@ class ReorderableListView extends StatefulWidget {
 
   /// The amount of space by which to inset the [children].
   final EdgeInsets padding;
+
+  /// Whether the scroll view scrolls in the reading direction.
+  ///
+  /// For example, if the reading direction is left-to-right and
+  /// [scrollDirection] is [Axis.horizontal], then the scroll view scrolls from
+  /// left to right when [reverse] is false and from right to left when
+  /// [reverse] is true.
+  ///
+  /// Similarly, if [scrollDirection] is [Axis.vertical], then the scroll view
+  /// scrolls from top to bottom when [reverse] is false and from bottom to top
+  /// when [reverse] is true.
+  ///
+  /// Defaults to false.
+  final bool reverse;
 
   /// Called when a list child is dropped into a new position to shuffle the
   /// underlying list.
@@ -123,6 +138,7 @@ class _ReorderableListViewState extends State<ReorderableListView> {
           scrollDirection: widget.scrollDirection,
           onReorder: widget.onReorder,
           padding: widget.padding,
+          reverse: widget.reverse,
         );
       },
     );
@@ -145,6 +161,7 @@ class _ReorderableListContent extends StatefulWidget {
     @required this.scrollDirection,
     @required this.padding,
     @required this.onReorder,
+    @required this.reverse,
   });
 
   final Widget header;
@@ -152,6 +169,7 @@ class _ReorderableListContent extends StatefulWidget {
   final Axis scrollDirection;
   final EdgeInsets padding;
   final ReorderCallback onReorder;
+  final bool reverse;
 
   @override
   _ReorderableListContentState createState() => _ReorderableListContentState();
@@ -484,9 +502,10 @@ class _ReorderableListContentState extends State<_ReorderableListContent>
       if (_currentIndex == index) {
         return _buildContainerForScrollDirection(children: <Widget>[
           SizeTransition(
-              sizeFactor: _entranceController,
-              axis: widget.scrollDirection,
-              child: spacing),
+            sizeFactor: _entranceController,
+            axis: widget.scrollDirection,
+            child: spacing,
+          ),
           child,
         ]);
       }
@@ -556,14 +575,22 @@ class _ReorderableListContentState extends State<_ReorderableListContent>
           );
           break;
       }
-      wrappedChildren.add(
-        _wrap(finalDropArea, widget.children.length, constraints),
-      );
+      if (widget.reverse) {
+        wrappedChildren.insert(
+          0,
+          _wrap(finalDropArea, widget.children.length, constraints),
+        );
+      } else {
+        wrappedChildren.add(
+          _wrap(finalDropArea, widget.children.length, constraints),
+        );
+      }
       return SingleChildScrollView(
         scrollDirection: widget.scrollDirection,
         child: _buildContainerForScrollDirection(children: wrappedChildren),
         padding: widget.padding,
         controller: _scrollController,
+        reverse: widget.reverse,
       );
     });
   }

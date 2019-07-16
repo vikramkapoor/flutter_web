@@ -1,7 +1,7 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-// Synced 2019-05-30T14:20:56.110502.
+// Synced 2019-07-16T14:31:01.420458.
 
 /// Flutter widgets implementing Material Design.
 ///
@@ -83,6 +83,7 @@ export 'src/material/popup_menu.dart';
 export 'src/material/progress_indicator.dart';
 export 'src/material/radio.dart';
 export 'src/material/radio_list_tile.dart';
+export 'src/material/range_slider.dart';
 export 'src/material/raised_button.dart';
 export 'src/material/refresh_indicator.dart';
 export 'src/material/reorderable_list.dart';

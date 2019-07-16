@@ -1,11 +1,12 @@
 // Copyright 2015 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+// Synced 2019-07-16T14:31:01.477404.
 
 import 'dart:math' as math;
-import 'package:meta/meta.dart';
+import 'package:flutter_web_ui/ui.dart' show Color, lerpDouble, hashValues;
 
-import 'package:flutter_web_ui/ui.dart';
+import 'package:flutter_web/foundation.dart';
 
 double _getHue(
     double red, double green, double blue, double max, double delta) {
@@ -80,10 +81,10 @@ Color _colorFromHue(
 ///
 /// See also:
 ///
-///   * [HSLColor], a color that uses a color space based on human perception of
-///     colored light.
-///   * [HSV and HSL](https://en.wikipedia.org/wiki/HSL_and_HSV) Wikipedia
-///     article, which this implementation is based upon.
+///  * [HSLColor], a color that uses a color space based on human perception of
+///    colored light.
+///  * [HSV and HSL](https://en.wikipedia.org/wiki/HSL_and_HSV) Wikipedia
+///    article, which this implementation is based upon.
 @immutable
 class HSVColor {
   /// Creates a color.
@@ -247,10 +248,10 @@ class HSVColor {
 ///
 /// See also:
 ///
-///   * [HSVColor], a color that uses a color space based on human perception of
-///     pigments (e.g. paint and printer's ink).
-///   * [HSV and HSL](https://en.wikipedia.org/wiki/HSL_and_HSV) Wikipedia
-///     article, which this implementation is based upon.
+///  * [HSVColor], a color that uses a color space based on human perception of
+///    pigments (e.g. paint and printer's ink).
+///  * [HSV and HSL](https://en.wikipedia.org/wiki/HSL_and_HSV) Wikipedia
+///    article, which this implementation is based upon.
 @immutable
 class HSLColor {
   /// Creates a color.
@@ -451,4 +452,43 @@ class ColorSwatch<T> extends Color {
 
   @override
   String toString() => '$runtimeType(primary value: ${super.toString()})';
+}
+
+/// [DiagnosticsProperty] that has an [Color] as value.
+class ColorProperty extends DiagnosticsProperty<Color> {
+  /// Create a diagnostics property for [Color].
+  ///
+  /// The [showName], [style], and [level] arguments must not be null.
+  ColorProperty(
+    String name,
+    Color value, {
+    bool showName = true,
+    Object defaultValue = kNoDefaultValue,
+    DiagnosticsTreeStyle style = DiagnosticsTreeStyle.singleLine,
+    DiagnosticLevel level = DiagnosticLevel.info,
+  })  : assert(showName != null),
+        assert(style != null),
+        assert(level != null),
+        super(
+          name,
+          value,
+          defaultValue: defaultValue,
+          showName: showName,
+          style: style,
+          level: level,
+        );
+
+  @override
+  Map<String, Object> toJsonMap(DiagnosticsSerializationDelegate delegate) {
+    final Map<String, Object> json = super.toJsonMap(delegate);
+    if (value != null) {
+      json['valueProperties'] = <String, Object>{
+        'red': value.red,
+        'green': value.green,
+        'blue': value.blue,
+        'alpha': value.alpha,
+      };
+    }
+    return json;
+  }
 }
