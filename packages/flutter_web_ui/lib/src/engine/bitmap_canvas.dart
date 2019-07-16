@@ -505,11 +505,11 @@ class BitmapCanvas extends EngineCanvas with SaveStackTracking {
     final double blRadiusY = rrect.blRadiusY.abs();
     final double brRadiusY = rrect.brRadiusY.abs();
 
-    ctx.moveTo(left + trRadiusX, top);
-
     if (startNewPath) {
       ctx.beginPath();
     }
+
+    ctx.moveTo(left + trRadiusX, top);
 
     // Top side and top-right corner
     ctx.lineTo(right - trRadiusX, top);
