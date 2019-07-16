@@ -154,7 +154,7 @@ class RecordingCanvas {
     _commands.add(PaintClipRRect(rrect));
   }
 
-  void clipPath(ui.Path path) {
+  void clipPath(ui.Path path, {bool doAntiAlias = true}) {
     _paintBounds.clipRect(path.getBounds());
     _hasArbitraryPaint = true;
     _commands.add(PaintClipPath(path));

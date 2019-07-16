@@ -38,3 +38,6 @@ Future<void> initializeSkia() {
 ///
 /// This is created by [initializeSkia].
 js.JsObject canvasKit;
+
+/// The Skia font collection.
+SkiaFontCollection skiaFontCollection;

@@ -330,16 +330,13 @@ class PhysicalShapeLayer extends ContainerLayer
     final int saveCount = paintContext.canvas.save();
     switch (_clipBehavior) {
       case ui.Clip.hardEdge:
-        paintContext.canvas.clipPath(_path);
+        paintContext.canvas.clipPath(_path, doAntiAlias: false);
         break;
       case ui.Clip.antiAlias:
-        // TODO(het): This is supposed to be different from Clip.hardEdge in
-        // that it anti-aliases the clip. The canvas clipPath() method
-        // should support this.
-        paintContext.canvas.clipPath(_path);
+        paintContext.canvas.clipPath(_path, doAntiAlias: true);
         break;
       case ui.Clip.antiAliasWithSaveLayer:
-        paintContext.canvas.clipPath(_path);
+        paintContext.canvas.clipPath(_path, doAntiAlias: true);
         paintContext.canvas.saveLayer(paintBounds, null);
         break;
       case ui.Clip.none:

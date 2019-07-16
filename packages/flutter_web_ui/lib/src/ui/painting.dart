@@ -1637,6 +1637,9 @@ class MaskFilter {
   /// On the web returns the value of sigma passed to [MaskFilter.blur].
   double get webOnlySigma => _sigma;
 
+  /// On the web returns the value of `style` passed to [MaskFilter.blur].
+  BlurStyle get webOnlyBlurStyle => _style;
+
   @override
   bool operator ==(dynamic other) {
     if (other is! MaskFilter) {
