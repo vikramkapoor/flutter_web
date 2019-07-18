@@ -766,10 +766,8 @@ abstract class Window {
   /// no later frames to batch.
   TimingsCallback get onReportTimings => _onReportTimings;
   TimingsCallback _onReportTimings;
-  Zone _onReportTimingsZone;
   set onReportTimings(TimingsCallback callback) {
     _onReportTimings = callback;
-    _onReportTimingsZone = Zone.current;
   }
 
   /// A callback that is invoked for each frame after [onBeginFrame] has

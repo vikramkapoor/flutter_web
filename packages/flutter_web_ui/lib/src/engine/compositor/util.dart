@@ -23,124 +23,126 @@ js.JsObject makeSkPaint(ui.Paint paint) {
   }
   skPaint.callMethod('setStyle', <js.JsObject>[skPaintStyle]);
 
-  js.JsObject skBlendMode;
-  switch (paint.blendMode) {
-    case ui.BlendMode.clear:
-      skBlendMode = canvasKit['BlendMode']['Clear'];
-      break;
-
-    case ui.BlendMode.src:
-      skBlendMode = canvasKit['BlendMode']['Src'];
-      break;
-
-    case ui.BlendMode.dst:
-      skBlendMode = canvasKit['BlendMode']['Dst'];
-      break;
-
-    case ui.BlendMode.srcOver:
-      skBlendMode = canvasKit['BlendMode']['SrcOver'];
-      break;
-
-    case ui.BlendMode.dstOver:
-      skBlendMode = canvasKit['BlendMode']['DstOver'];
-      break;
-
-    case ui.BlendMode.srcIn:
-      skBlendMode = canvasKit['BlendMode']['SrcIn'];
-      break;
-
-    case ui.BlendMode.dstIn:
-      skBlendMode = canvasKit['BlendMode']['DstIn'];
-      break;
-
-    case ui.BlendMode.srcOut:
-      skBlendMode = canvasKit['BlendMode']['SrcOut'];
-      break;
-
-    case ui.BlendMode.dstOut:
-      skBlendMode = canvasKit['BlendMode']['DstOut'];
-      break;
-
-    case ui.BlendMode.srcATop:
-      skBlendMode = canvasKit['BlendMode']['SrcATop'];
-      break;
-
-    case ui.BlendMode.dstATop:
-      skBlendMode = canvasKit['BlendMode']['DstATop'];
-      break;
-
-    case ui.BlendMode.xor:
-      skBlendMode = canvasKit['BlendMode']['Xor'];
-      break;
-
-    case ui.BlendMode.plus:
-      skBlendMode = canvasKit['BlendMode']['Plus'];
-      break;
-
-    case ui.BlendMode.modulate:
-      skBlendMode = canvasKit['BlendMode']['Modulate'];
-      break;
-
-    case ui.BlendMode.screen:
-      skBlendMode = canvasKit['BlendMode']['Screen'];
-      break;
-
-    case ui.BlendMode.overlay:
-      skBlendMode = canvasKit['BlendMode']['Overlay'];
-      break;
-
-    case ui.BlendMode.darken:
-      skBlendMode = canvasKit['BlendMode']['Darken'];
-      break;
-
-    case ui.BlendMode.lighten:
-      skBlendMode = canvasKit['BlendMode']['Lighten'];
-      break;
-
-    case ui.BlendMode.colorDodge:
-      skBlendMode = canvasKit['BlendMode']['ColorDodge'];
-      break;
-
-    case ui.BlendMode.colorBurn:
-      skBlendMode = canvasKit['BlendMode']['ColorBurn'];
-      break;
-
-    case ui.BlendMode.hardLight:
-      skBlendMode = canvasKit['BlendMode']['HardLight'];
-      break;
-
-    case ui.BlendMode.softLight:
-      skBlendMode = canvasKit['BlendMode']['SoftLight'];
-      break;
-
-    case ui.BlendMode.difference:
-      skBlendMode = canvasKit['BlendMode']['Difference'];
-      break;
-
-    case ui.BlendMode.exclusion:
-      skBlendMode = canvasKit['BlendMode']['Exclusion'];
-      break;
-
-    case ui.BlendMode.multiply:
-      skBlendMode = canvasKit['BlendMode']['Multiply'];
-      break;
-
-    case ui.BlendMode.hue:
-      skBlendMode = canvasKit['BlendMode']['Hue'];
-      break;
-
-    case ui.BlendMode.saturation:
-      skBlendMode = canvasKit['BlendMode']['Saturation'];
-      break;
-
-    case ui.BlendMode.color:
-      skBlendMode = canvasKit['BlendMode']['Color'];
-      break;
-
-    case ui.BlendMode.luminosity:
-      skBlendMode = canvasKit['BlendMode']['Luminosity'];
-      break;
-  }
+  // TODO(het): make the following commented out code useful. It currently
+  //            triggers "unused variable" analyzer warning.
+//   js.JsObject skBlendMode;
+//   switch (paint.blendMode) {
+//     case ui.BlendMode.clear:
+//       skBlendMode = canvasKit['BlendMode']['Clear'];
+//       break;
+//
+//     case ui.BlendMode.src:
+//       skBlendMode = canvasKit['BlendMode']['Src'];
+//       break;
+//
+//     case ui.BlendMode.dst:
+//       skBlendMode = canvasKit['BlendMode']['Dst'];
+//       break;
+//
+//     case ui.BlendMode.srcOver:
+//       skBlendMode = canvasKit['BlendMode']['SrcOver'];
+//       break;
+//
+//     case ui.BlendMode.dstOver:
+//       skBlendMode = canvasKit['BlendMode']['DstOver'];
+//       break;
+//
+//     case ui.BlendMode.srcIn:
+//       skBlendMode = canvasKit['BlendMode']['SrcIn'];
+//       break;
+//
+//     case ui.BlendMode.dstIn:
+//       skBlendMode = canvasKit['BlendMode']['DstIn'];
+//       break;
+//
+//     case ui.BlendMode.srcOut:
+//       skBlendMode = canvasKit['BlendMode']['SrcOut'];
+//       break;
+//
+//     case ui.BlendMode.dstOut:
+//       skBlendMode = canvasKit['BlendMode']['DstOut'];
+//       break;
+//
+//     case ui.BlendMode.srcATop:
+//       skBlendMode = canvasKit['BlendMode']['SrcATop'];
+//       break;
+//
+//     case ui.BlendMode.dstATop:
+//       skBlendMode = canvasKit['BlendMode']['DstATop'];
+//       break;
+//
+//     case ui.BlendMode.xor:
+//       skBlendMode = canvasKit['BlendMode']['Xor'];
+//       break;
+//
+//     case ui.BlendMode.plus:
+//       skBlendMode = canvasKit['BlendMode']['Plus'];
+//       break;
+//
+//     case ui.BlendMode.modulate:
+//       skBlendMode = canvasKit['BlendMode']['Modulate'];
+//       break;
+//
+//     case ui.BlendMode.screen:
+//       skBlendMode = canvasKit['BlendMode']['Screen'];
+//       break;
+//
+//     case ui.BlendMode.overlay:
+//       skBlendMode = canvasKit['BlendMode']['Overlay'];
+//       break;
+//
+//     case ui.BlendMode.darken:
+//       skBlendMode = canvasKit['BlendMode']['Darken'];
+//       break;
+//
+//     case ui.BlendMode.lighten:
+//       skBlendMode = canvasKit['BlendMode']['Lighten'];
+//       break;
+//
+//     case ui.BlendMode.colorDodge:
+//       skBlendMode = canvasKit['BlendMode']['ColorDodge'];
+//       break;
+//
+//     case ui.BlendMode.colorBurn:
+//       skBlendMode = canvasKit['BlendMode']['ColorBurn'];
+//       break;
+//
+//     case ui.BlendMode.hardLight:
+//       skBlendMode = canvasKit['BlendMode']['HardLight'];
+//       break;
+//
+//     case ui.BlendMode.softLight:
+//       skBlendMode = canvasKit['BlendMode']['SoftLight'];
+//       break;
+//
+//     case ui.BlendMode.difference:
+//       skBlendMode = canvasKit['BlendMode']['Difference'];
+//       break;
+//
+//     case ui.BlendMode.exclusion:
+//       skBlendMode = canvasKit['BlendMode']['Exclusion'];
+//       break;
+//
+//     case ui.BlendMode.multiply:
+//       skBlendMode = canvasKit['BlendMode']['Multiply'];
+//       break;
+//
+//     case ui.BlendMode.hue:
+//       skBlendMode = canvasKit['BlendMode']['Hue'];
+//       break;
+//
+//     case ui.BlendMode.saturation:
+//       skBlendMode = canvasKit['BlendMode']['Saturation'];
+//       break;
+//
+//     case ui.BlendMode.color:
+//       skBlendMode = canvasKit['BlendMode']['Color'];
+//       break;
+//
+//     case ui.BlendMode.luminosity:
+//       skBlendMode = canvasKit['BlendMode']['Luminosity'];
+//       break;
+//   }
 
   skPaint.callMethod('setAntiAlias', <bool>[paint.isAntiAlias]);
 
