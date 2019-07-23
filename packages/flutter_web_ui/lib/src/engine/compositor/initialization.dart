@@ -18,17 +18,17 @@ Future<void> initializeSkia() {
   StreamSubscription<html.Event> loadSubscription;
   loadSubscription = domRenderer.canvasKitScript.onLoad.listen((_) {
     loadSubscription.cancel();
-    final js.JsObject canvasKitInitArgs = js.JsObject.jsify(<dynamic, dynamic>{
-      'locateFile': js.allowInterop((String file) => canvasKitBaseUrl + file)
+    final js.JsObject canvasKitInitArgs = js.JsObject.jsify(<String, dynamic>{
+      'locateFile': (String file, String unusedBase) => canvasKitBaseUrl + file,
     });
     final js.JsObject canvasKitInit =
         js.JsObject(js.context['CanvasKitInit'], <dynamic>[canvasKitInitArgs]);
     final js.JsObject canvasKitInitPromise = canvasKitInit.callMethod('ready');
     canvasKitInitPromise.callMethod('then', <dynamic>[
-      js.allowInterop((js.JsObject ck) {
+      (js.JsObject ck) {
         canvasKit = ck;
         canvasKitCompleter.complete();
-      })
+      },
     ]);
   });
   return canvasKitCompleter.future;
