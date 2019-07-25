@@ -183,4 +183,32 @@ void main() {
     expect(paragraph.plainText, '');
     expect(paragraph.geometricStyle.fontWeight, FontWeight.bold);
   });
+
+  // Regression test for https://github.com/flutter/flutter/issues/34931.
+  test('hit test on styled text returns correct span offset', () {
+    final ParagraphBuilder builder = ParagraphBuilder(ParagraphStyle(
+      fontFamily: 'sans-serif',
+      fontStyle: FontStyle.normal,
+      fontWeight: FontWeight.normal,
+      fontSize: 15.0,
+    ));
+    builder.pushStyle(TextStyle(fontWeight: FontWeight.bold));
+    const String firstSpanText = 'XYZ';
+    builder.addText(firstSpanText);
+    builder.pushStyle(TextStyle(fontWeight: FontWeight.normal));
+    const String secondSpanText = '1234';
+    builder.addText(secondSpanText);
+    builder.pushStyle(TextStyle(fontStyle: FontStyle.italic));
+    builder.addText('followed by a link');
+    final EngineParagraph paragraph = builder.build();
+    paragraph.layout(const ParagraphConstraints(width: 800.0));
+    expect(paragraph.plainText, isNull);
+    const int secondSpanStartPosition = firstSpanText.length;
+    const int thirdSpanStartPosition =
+        firstSpanText.length + secondSpanText.length;
+    expect(paragraph.getPositionForOffset(const Offset(50, 0)).offset,
+        secondSpanStartPosition);
+    expect(paragraph.getPositionForOffset(const Offset(150, 0)).offset,
+        thirdSpanStartPosition);
+  });
 }

@@ -236,9 +236,8 @@ class EngineParagraph implements ui.Paragraph {
   @override
   ui.TextPosition getPositionForOffset(ui.Offset offset) {
     if (_plainText == null) {
-      return const ui.TextPosition(offset: 0);
+      return getPositionForMultiSpanOffset(offset);
     }
-
     final double dx = offset.dx - _alignOffset;
     final TextMeasurementService instance = _measurementService;
 
@@ -271,6 +270,14 @@ class EngineParagraph implements ui.Paragraph {
       // The offset is closer to high index.
       return ui.TextPosition(offset: high, affinity: ui.TextAffinity.upstream);
     }
+  }
+
+  ui.TextPosition getPositionForMultiSpanOffset(ui.Offset offset) {
+    assert(_lastUsedConstraints != null,
+        'missing call to paragraph layout before reading text position');
+    final TextMeasurementService instance = _measurementService;
+    return instance.getTextPositionForOffset(
+        this, _lastUsedConstraints, offset);
   }
 
   @override
