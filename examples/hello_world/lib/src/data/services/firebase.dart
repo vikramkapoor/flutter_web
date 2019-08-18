@@ -12,12 +12,12 @@ void init() {
   if (!_ready) {
     
    /* fb.initializeApp(
-    apiKey: "AIzaSyB6bvNK9RZ964Adx2XxIaHTLA7LMZIf_0A",
-    authDomain: "rakshak-b1b11.firebaseapp.com",
-    databaseURL: "https://rakshak-b1b11.firebaseio.com",
-    projectId: "rakshak-b1b11",
-    storageBucket: "rakshak-b1b11.appspot.com",
-    messagingSenderId: "995372369195",
+    apiKey: "",
+    authDomain: "",
+    databaseURL: "",
+    projectId: "",
+    storageBucket: "",
+    messagingSenderId: "",
     );*/
     
     _ready = true;
